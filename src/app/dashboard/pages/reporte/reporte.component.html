@@ -1,0 +1,156 @@
+<div class="formulario_envio_informacion">
+
+    <div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
+        <div class="card-content">
+            <span class="title" style="color: rgb(212, 212, 212);">
+                {{loginSevice.usuario.nombre}} {{loginSevice.usuario.apellido}}
+            </span> <br>
+            <b style="font-weight: bold;">Zona: </b>{{loginSevice.usuario.region}} <br>
+            <span class="subtitle" style="color: rgb(212, 212, 212);">
+                {{date_log}}
+            </span>
+        </div>
+    </div>
+    <hr>
+    <div class="card">
+        <header class="card-header">
+            <p class="card-header-title">Información del reporte</p>
+            <button class="card-header-icon" aria-label="more options">
+              <span class="icon"  [ngClass]="{'rotado': isRotated()}" (click)="toggleInformacion()">
+                <i class="fas fa-angle-up" aria-hidden="true" ></i>
+              </span>
+            </button>
+        </header>
+        <div class="card-content" [ngClass]="{'oculto':!Informacion(), 'activo':Informacion()}">
+            <div class="field">
+                <div class="control">
+                    <label for="" class="label">Establecimiento</label>
+                    <div class="select">
+                        <select [(ngModel)]="establecimiento">
+                            @for (clientes of ClientServices.clientes(); track $index) {
+                                <option value="{{clientes._id}}">{{clientes.cliente}}</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-grouped">
+                <div class="control">
+                  <label class="radio">
+                    <input type="radio" name="evento" value="Impulso" [(ngModel)]="tipo"> Impulso
+                  </label>
+                </div>
+                <div class="control">
+                  <label class="radio">
+                    <input type="radio" name="evento" value="Evento" [(ngModel)]="tipo"> Evento
+                  </label>
+                </div>
+              </div>
+              @if (tipo === 'Evento') {
+                  <div class="card">
+                      <div class="card-content">
+                          <div class="field is-grouped">
+                              <div class="control">
+                                  <input type="radio" name="Tipo_evento" value="Juega y Gana" [(ngModel)]="tipo_evento"> Juega y Gana
+                              </div>
+                              <div class="control">
+                                  <input type="radio" name="Tipo_evento" value="Color y estilo" [(ngModel)]="tipo_evento"> Color y estilo
+                              </div>
+                          </div>
+                          <div class="field is-grouped">
+                              <div class="control">
+                                  <input type="radio" name="Tipo_evento" value="Cabellos con estilo" [(ngModel)]="tipo_evento"> Cabellos con estilo
+                              </div>
+                              <div class="control">
+                                  <input type="radio" name="Tipo_evento" value="Dale y gana" [(ngModel)]="tipo_evento"> Dale y gana
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              }
+              @if (establecimiento && tipo) {
+                @if(tipo != 'Evento'){
+                    <button class="button is-primary" (click)="NextStep()">
+                        <span class="icon"><i class="fas fa-long-arrow-alt-right"></i></span>
+                        <span>Continuar</span>
+                    </button>
+                }@else if (tipo_evento) {
+                    <button class="button is-primary" (click)="NextStep()">
+                        <span class="icon"><i class="fas fa-long-arrow-alt-right"></i></span>
+                        <span>Continuar</span>
+                    </button>
+                }
+              }
+        </div>
+    </div>
+
+    @if (CargadaInformacion()) {
+        <div class="card">
+            <div class="card-content">
+                    <div class="field">
+                        <div class="control">
+                            <label for="" class="label">Buscado de productos</label>
+                            <input type="text" class="input" placeholder="Buscar producto" [(ngModel)]="searchTerm" (input)="filterProductos()">
+                        </div>
+                    </div>
+                    <hr>
+                    <table class="table is-fullwidth is-hoverable is-striped">
+                        <thead>
+                            @for (producto of filteredProductos; track $index) {
+                                <tr>
+                                    <td style="width: 15px;">
+                                        <button class=" button is-success is-small is-outlined" style="border: none;" (click)="agregarProducto(producto._id)">
+                                            <span class="icon"><i class="fas fa-plus-square"></i></span>
+                                        </button>
+                                    </td>
+                                    <td>{{producto.producto}}</td>
+                                </tr>
+                            }
+                        </thead>
+                    </table>
+                    <table class="table is-fullwidth is-striped">
+                        @if(ProductosSelected.length > 0){
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Producto</th>
+                                    <th>Vendido</th>
+                                </tr>
+                            </thead>
+                        }
+                        <tbody>
+                            @for (productoAgregado of ProductosSelected; track $index) {
+                                <tr>
+                                    <td style="width: 15px;">
+                                        <button class=" button is-danger is-small is-outlined" style="border: none;" (click)="eliminarDeProductosSelected($index)">
+                                            <span class="icon"><i class="fas fa-trash-alt"></i></span>
+                                        </button>
+                                    </td>
+                                    <td>{{productoAgregado.producto.producto}}</td>
+                                    <td style="width: 30px"><input type="number" class="input" placeholde="Cantidad vendida" [(ngModel)]="productoAgregado.cantidad"></td>
+                                </tr>
+                            } @empty {
+                                <div class="notification is-primary is-light">
+                                    Aun no haz indicado ningun producto para reportar su venta.
+                                </div>
+                            }
+                        </tbody>
+                    </table>
+                    @if(ProductosSelected.length > 0){
+                        <div class="field">
+                            <div class="control">
+                                    <textarea class="textarea" placeholder="Observación" [(ngModel)]="obervacion"></textarea>
+                            </div>
+                        </div>
+                    }
+                    @if (ProductosSelected.length > 0 && VerificarReporte() && obervacion) {
+                        <button class="button is-primary" (click)="Reportar()">
+                            <span class="icon"><i class="fas fa-check"></i></span>
+                            <span>Reportar</span>
+                        </button>
+                    }
+                </div>
+        </div>
+    }
+
+</div>

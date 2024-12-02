@@ -1,0 +1,77 @@
+<app-modal-clientes
+[active]="Modal()"
+[Edicion]="Edicion()"
+[data]="data"
+(onCloseModal)="ManejoModal(); cerrarEdicion();">
+
+</app-modal-clientes>
+<button class="button is-primary" (click)="ManejoModal()">
+  <span class="icon"><i class="fas fa-plus-square"></i></span>
+  <span>Nuevo</span>
+</button>
+<hr>
+<table class="table is-fullwidth is-striped">
+    @if(paginatedClientes.length > 0){
+        <thead>
+            <tr>
+                <th>Cliente</th>
+                <th>Rif</th>
+                <th>Información</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+    }
+
+    @if(clientService.loading()){
+      <app-loadings />
+    } @else {
+      <tbody>
+          @for (Cliente of paginatedClientes; track $index) {
+              <tr>
+                  <td>{{Cliente.cliente}}</td>
+                  <td>{{Cliente.rif}}</td>
+                  <td>{{Cliente.informacion}}</td>
+                  <td>
+                    <i class="fas fa-user-edit" style="color: rgb(129, 228, 129); cursor: pointer;" (click)="Editar(Cliente)"></i> 
+                    <i class="fas fa-user-minus" style="color: rgb(228, 129, 129); cursor: pointer;" (click)="EliminarCliente(Cliente)"></i>
+                  </td>
+              </tr>
+          } @empty {
+              <div class="notification is-primary is-light">
+                No se encuentra ningún cliente.
+              </div>
+          }
+      </tbody>
+    }
+</table>
+
+  <!-- Paginación -->
+  <nav class="pagination" role="navigation" aria-label="pagination">
+    <!-- Botón "Anterior" -->
+    <a class="pagination-previous" [class.is-disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+      Anterior
+    </a>
+    
+    <!-- Lista de páginas -->
+    <ul class="pagination-list">
+    @for(page of [].constructor(totalPages); track $index){
+        <li>
+          <a class="pagination-link" 
+             [class.is-current]="currentPage === $index + 1" 
+             (click)="goToPage($index + 1)">
+            {{$index + 1}}
+          </a>
+        </li>
+    }
+    </ul>
+    
+    <!-- Botón "Siguiente" -->
+    <a class="pagination-next" [class.is-disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+      Siguiente
+    </a>
+  </nav>
+  
+  <!-- Mostrar información de paginación -->
+  <div class="pagination-info">
+    Página {{currentPage}} de {{totalPages}}
+  </div>

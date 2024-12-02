@@ -1,0 +1,81 @@
+ <app-modal-productos 
+ [active]="Modal()"
+ [Edicion]="Edicion()"
+ [data]="data"
+ (onCloseModal)="ManejoModal();  cerrarEdicion()"
+ />
+
+ <button class="button is-primary" (click)="ManejoModal()">
+    <span class="icon"><i class="fas fa-plus-square"></i></span>
+    <span>Nuevo</span>
+  </button>
+  <hr>
+  <!-- Tabla de productos -->
+  <table class="table is-fullwidth is-striped">
+    @if(paginatedProductos.length > 0){
+        <thead>
+          <tr>
+            <th>Linea</th>
+            <th>Marca</th>
+            <th>Producto</th>
+            <th>Puntos</th>
+            <th>Precio (USD)</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+    }
+    @if(productosServices.loading()){
+      <app-loadings />
+    } @else {
+      <tbody>
+      @for (producto of productosServices.productos(); track $index) {
+          <tr>
+            <td>{{producto.linea}}</td>
+            <td>{{producto.marca}}</td>
+            <td>{{producto.producto}}</td>
+            <td>{{producto.puntos}}</td>
+            <td>{{producto.precio}} $</td>
+            <td>
+              <i class="fas fa-edit" style="color: rgb(129, 228, 129); cursor: pointer;" (click)="Editar(producto)"></i> 
+              <i class="fas fa-trash-alt" style="color: rgb(228, 129, 129); cursor: pointer;" (click)="EliminarProducto(producto)"></i>
+            </td>
+          </tr>
+      } @empty {
+          <div class="notification is-primary is-light">
+            No se encuentra ningún producto.
+          </div>
+      }
+      </tbody>
+    }
+  </table>
+  
+  <!-- Paginación -->
+  <nav class="pagination" role="navigation" aria-label="pagination">
+    <!-- Botón "Anterior" -->
+    <a class="pagination-previous" [class.is-disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+      Anterior
+    </a>
+    
+    <!-- Lista de páginas -->
+    <ul class="pagination-list">
+    @for(page of [].constructor(totalPages); track $index){
+        <li>
+          <a class="pagination-link" 
+             [class.is-current]="currentPage === $index + 1" 
+             (click)="goToPage($index + 1)">
+            {{$index + 1}}
+          </a>
+        </li>
+    }
+    </ul>
+    
+    <!-- Botón "Siguiente" -->
+    <a class="pagination-next" [class.is-disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+      Siguiente
+    </a>
+  </nav>
+  
+  <!-- Mostrar información de paginación -->
+  <div class="pagination-info">
+    Página {{currentPage}} de {{totalPages}}
+  </div>

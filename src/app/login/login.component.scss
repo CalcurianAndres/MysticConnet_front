@@ -1,0 +1,23 @@
+.cuerpo{
+    position: absolute;
+    display: block;
+    width: 100%;
+    height: 100%;
+    background-color: rgb(48, 45, 64);
+}
+
+.cuerpo img {
+    width: 250px; /* Ajusta el tamaño de la imagen */
+    height: auto; /* Mantiene la proporción */
+    display: block;
+    margin: 20px auto 0; /* 20px de margen superior, centrada horizontalmente */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra difusa */
+    border-radius: 50%; /* Borde redondeado, ajusta según prefieras */
+  }
+  
+.form{
+    width: 250px;
+    height: auto;
+    display: block;
+    margin: 20px auto 0;
+}

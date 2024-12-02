@@ -1,0 +1,63 @@
+<div class="modal" [ngClass]="{'is-active':active}">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Promotoras</p>
+            <button class="delete" aria-label="close" (click)="cerrar()"></button>
+        </header>
+        <div class="modal-card-body">
+            <div class="field is-grouped">
+                <div class="control">
+                    <label for="" class="label">Nombre:</label>
+                    <input type="text" class="input" [(ngModel)]="data.nombre">
+                </div>
+                <div class="control">
+                    <label for="" class="label">Apellido:</label>
+                    <input type="text" class="input" [(ngModel)]="data.apellido">
+                </div>
+            </div>
+            <div class="field is-grouped">
+                <div class="control" style="width: 140px;">
+                    <label for="" class="label">Teléfono:</label>
+                    <input type="text" class="input" [(ngModel)]="data.telefono">
+                </div>
+                <div class="control">
+                    <label for="" class="label">Correo:</label>
+                    <input type="email" class="input" [(ngModel)]="data.correo">
+                </div>
+                <div class="control" style="width: 140px;">
+                    <label for="" class="label">Región</label>
+                    <input type="text" class="input" [(ngModel)]="data.region">
+                </div>
+            </div>
+            <div class="field is-grouped">
+                <div class="control">
+                    <label for="" class="label">Sueldo (USD):</label>
+                    <input type="number" name="" id="" class="input" [(ngModel)]="data.sueldo">
+                </div>
+                <div class="control">
+                    <label for="" class="label">Role:</label>
+                    <div class="select">
+                        <select [(ngModel)]="data.role">
+                            <option value="Admin">Administrador</option>
+                            <option value="Promotora">Promotora</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            @if(data.nombre && data.apellido && data.telefono && data.correo && data.region && data.sueldo && data.role && !Edicion){
+                <button class="button is-primary" (click)="nuevaPromotora()">
+                    <span class="icon"></span>
+                    <span>Registrar</span>
+                </button>
+            }@else if (data.nombre && data.apellido && data.telefono && data.correo && data.region && data.sueldo && data.role && Edicion) {
+                <button class="button is-primary" (click)="EditarPromotora()">
+                    <span class="icon"></span>
+                    <span>Editar</span>
+                </button>
+            }
+            
+        </div>
+    </div>
+</div>

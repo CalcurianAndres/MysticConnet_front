@@ -1,0 +1,33 @@
+<div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
+    <div class="card-content">
+        <app-title [title]="Componente()"/>
+        Carga de {{Componente()}}
+    </div>
+</div>
+<hr>
+<div class="tabs">
+    <ul>
+      <li [ngClass]="{'is-active':Componente() === 'Productos'}" (click)="setComponente('Productos')"><a>Productos</a></li>
+      <li [ngClass]="{'is-active':Componente() === 'Clientes'}" (click)="setComponente('Clientes')"><a>Clientes</a></li>
+      <li [ngClass]="{'is-active':Componente() === 'Promotoras'}" (click)="setComponente('Promotoras')"><a>Promotoras</a></li>
+    </ul>
+</div>
+@if(Componente() === 'Productos'){
+    @defer ( on idle) {
+        <app-productos></app-productos>
+    }@placeholder {
+        <app-loadings />
+    }
+}@else if (Componente() === 'Clientes') {
+    @defer (on idle) {
+        <app-clientes></app-clientes>
+    }@placeholder {
+        <app-loadings />
+    }
+}@else {
+    @defer (on idle) {
+        <app-promotoras></app-promotoras>
+    }@placeholder {
+        <app-loadings />
+    }
+}

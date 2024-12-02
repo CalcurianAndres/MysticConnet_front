@@ -1,0 +1,36 @@
+<div class="modal" [ngClass]="{'is-active':active}">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Clientes</p>
+            <button class="delete" aria-label="close" (click)="cerrar()"></button>
+        </header>
+        <div class="modal-card-body">
+            <div class="field is-grouped">
+                <div class="control">
+                    <label for="" class="label">Cliente:</label>
+                    <input type="text" class="input" [(ngModel)]="data.cliente">
+                </div>
+                <div class="control">
+                    <label for="" class="label">Rif:</label>
+                    <input type="text" class="input" [(ngModel)]="data.rif">
+                </div>
+            </div>
+            <div class="field">
+                <label for="" class="label">Información:</label>
+                <textarea name="" id="" class="textarea" [(ngModel)]="data.informacion"></textarea>
+            </div>
+            @if(data.cliente && data.rif && data.informacion && !Edicion){
+                <button class="button is-primary" (click)="nuevoCliente()">
+                    <span class="icon"></span>
+                    <span>Registrar</span>
+                </button>
+            }@else if (data.cliente && data.rif && data.informacion && Edicion) {
+                <button class="button is-primary" (click)="EditarProducto()">
+                    <span class="icon"></span>
+                    <span>Editar</span>
+                </button>
+            }
+        </div>
+    </div>
+</div>

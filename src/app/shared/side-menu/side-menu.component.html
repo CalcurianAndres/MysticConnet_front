@@ -1,0 +1,61 @@
+
+<nav class="navbar is-primary" role="navigation" aria-label="main navigation">
+  <div class="navbar-brand">
+    <a class="navbar-item" href="/">
+      <img src="../../../assets/logo_wb.png" alt="MysticConnet">
+    </a>
+    
+
+    <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" (click)="toggleMenu()">
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+      <span aria-hidden="true"></span>
+    </a>
+  </div>
+  <div class="navbar-menu">
+    <div class="navbar-item has-dropdown is-hoverable">
+      <a class="navbar-link">
+        Menú
+      </a>
+  
+      <div class="navbar-dropdown">
+        <a class="navbar-item" routerLink="administracion">
+          Administración
+        </a>
+        <a class="navbar-item" routerLink="estadisticas">
+          Estadisticas
+        </a>
+        <a class="navbar-item" routerLink="reportes">
+          Reportar
+        </a>
+      </div>
+    </div>
+
+    <div class="navbar-end">
+
+      <div class="navbar-item has-dropdown is-hoverable">
+        <a class="navbar-link">
+          {{LoginService.usuario.nombre}} {{LoginService.usuario.apellido}}
+        </a>
+    
+        <div class="navbar-dropdown">
+          <a class="navbar-item" (click)="logout()">
+            Cerrar sesión
+          </a>
+          <hr class="navbar-divider">
+          <div class="navbar-item">
+            Version 1.0.0
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="navbar-menu is-active" id="navMenu" *ngIf="mobile">
+    <a class="navbar-item" (click)="logout()">
+        Cerrar sesión
+    </a>
+  </div>
+</nav>

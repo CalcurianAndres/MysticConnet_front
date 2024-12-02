@@ -1,0 +1,61 @@
+<div class="modal" [ngClass]="{'is-active':active}">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Productos</p>
+            <button class="delete" aria-label="close" (click)="cerrar()"></button>
+        </header>
+        <div class="modal-card-body">
+            <div class="field is-grouped">
+                <div class="control">
+                    <label for="" class="label">Linea</label>
+                    <div class="select">
+                        <select [(ngModel)]="data.linea">
+                            <option value="Tradicional">Tradicional</option>
+                            <option value="Rebranding">Rebranding</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control">
+                    <label for="" class="label">Marca</label>
+                    <div class="select">
+                        <select [(ngModel)]="data.marca">
+                            <option value="Mystic">Mystic</option>
+                            <option value="Qerametik">Qerametik</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-grouped">
+                <div class="control">
+                    <label for="" class="label">Producto</label>
+                    <input type="text" class="input" [(ngModel)]="data.producto">
+                </div>
+            </div>
+            <div class="field is-grouped">
+                <div class="control">
+                    <label for="" class="label">Puntos</label>
+                    <input type="number" class="input" [(ngModel)]="data.puntos">
+                </div>
+                <div class="control">
+                    <label for="" class="label">Precio (USD)</label>
+                    <input type="number" class="input" [(ngModel)]="data.precio">
+                </div>
+            </div>
+
+
+            @if(data.linea && data.marca && data.producto && data.puntos && data.precio && !Edicion){
+                <button class="button is-primary" (click)="nuevoProducto()">
+                    <span class="icon"></span>
+                    <span>Registrar</span>
+                </button>
+            }@else if (data.linea && data.marca && data.producto && data.puntos && data.precio && Edicion) {
+                <button class="button is-primary" (click)="EditarProducto()">
+                    <span class="icon"></span>
+                    <span>Editar</span>
+                </button>
+            }
+
+        </div>
+    </div>
+</div>
