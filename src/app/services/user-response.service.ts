@@ -25,7 +25,7 @@ export class UserResponseService {
     promotoras: []
   })
 
-  public ruta = 'http://localhost:4000/api'
+  public ruta = 'mysticconnectserver-production.up.railway.app/api'
   
   
   constructor() { 

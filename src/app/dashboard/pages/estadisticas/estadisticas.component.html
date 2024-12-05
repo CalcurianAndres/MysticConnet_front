@@ -1,3 +1,8 @@
+<app-planificacion
+[active]="active"
+(onCloseModal)="active = false">
+
+</app-planificacion>
 <div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
     <div class="card-content">
         <app-title title="Estadísticas"/>
@@ -5,16 +10,17 @@
 </div>
 <hr>
 
-@for (reporte of reportesAgrupados; track $index; let i = $index) {
+<button class="button is-primary" (click)="active = true">
+    <span>Nueva planificación</span>
+</button>
+
+<br> <br>
+
+@for( promotora of promotoras.users(); track $index; let i = $index){
     <div class="card">
         <header class="card-header">
             <p class="card-header-title">
-                @if (reporte.puntosAcumulados >= 15) {
-                    <i class="far fa-thumbs-up" style="color: rgb(93, 194, 93);"></i> 
-                } @else {
-                    <i class="far fa-thumbs-down" style="color: rgb(218, 116, 116);"></i> 
-                }
-                {{reporte.promotora}} ({{reporte.puntosAcumulados}} Puntos)
+                {{promotora.nombre}} {{promotora.apellido}} ({{getPuntos(promotora.nombre, promotora.apellido) || 0}} puntos)
             </p>
             <button class="card-header-icon" aria-label="more options" (click)="togglePromotoraSection(i)">
                 <span class="icon" [ngClass]="{'rotado': isRotated[i]}">
@@ -23,13 +29,20 @@
             </button>
         </header>
         <div class="card-content" [ngClass]="{'oculto':!togglePromotora[i], 'activo':togglePromotora[i]}">
-            <span><b>Total vendido:</b>{{reporte.totalGastado}}$</span>
+            <span><b>Total vendido:</b> {{ getGastado(promotora.nombre, promotora.apellido) || 0 | currency:'USD' }}</span>
             <br> <br>
-            @for (ventas of reporte.reportes; track $index; let j = $index) {
-            <div class="card">
+            @for(fecha of getFechasDelRango(); track $index; let j = $index){
+            <div>
+                <div class="card">
                     <header class="card-header">
                         <p class="card-header-title">
-                            {{ventas.fecha | date: 'dd/MM/yyyy'}} - {{ventas.totalSubtotal}}$ ({{ventas.totalPuntos}} Puntos)
+                            {{fecha}} - 
+                            @if(!getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)){
+                                No hay reportes registrados
+                            } @else {
+
+                                {{getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.totalSubtotal | currency:'USD'}} ({{getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.totalPuntos}} Puntos)
+                            }
                         </p>
                         <button class="card-header-icon" aria-label="more options" (click)="toggleVentaSection(i, j)">
                             <span class="icon">
@@ -38,37 +51,43 @@
                         </button>
                     </header>
                     <!-- @ts-ignore -->
-                    <div class="card-content" [ngClass]="{'oculto': !toggleVentas[i] || !toggleVentas[i][j], 'activo': toggleVentas[i] && toggleVentas[i][j]}">
-                        <b>Establecimiento:</b> {{ventas.cliente}} <br>
-                        <b>Tipo:</b> {{ventas.tipo}} <br>
-                        <b>Observación:</b> {{ventas.observacion}}
-                        <hr>
-                        <table class="table is-fullwidth is-striped" [ngClass]="{'oculto': !toggleVentas[i] || !toggleVentas[i][j], 'activo': toggleVentas[i] && toggleVentas[i][j]}">
-                            <thead>
-                                <tr>
-                                    <th>Linea</th>
-                                    <th>Marca</th>
-                                    <th>Producto</th>
-                                    <th>Cantidad (Und)</th>
-                                    <th>Puntos</th>
-                                    <th>Subtotal (USD)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for(productos of ventas.productos; track $index){
+                    @if(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)){
+                        <div class="card-content" [ngClass]="{'oculto': !toggleVentas[i] || !toggleVentas[i][j], 'activo': toggleVentas[i] && toggleVentas[i][j]}">
+                            <b>Establecimiento:</b> {{getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.cliente}} <br>
+                            <b>Tipo:</b> {{getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.tipo}} <br>
+                            <b>Observación:</b> {{getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.observacion}}
+                            <hr>
+                            <table class="table is-fullwidth is-striped" [ngClass]="{'oculto': !toggleVentas[i] || !toggleVentas[i][j], 'activo': toggleVentas[i] && toggleVentas[i][j]}">
+                                <thead>
                                     <tr>
-                                        <td>{{productos.linea}}</td>
-                                        <td>{{productos.marca}}</td>
-                                        <td>{{productos.producto}}</td>
-                                        <td>{{productos.cantidad}}</td>
-                                        <td>{{productos.puntosTotales}}</td>
-                                        <td>{{productos.subtotal}} $</td>
+                                        <th>Linea</th>
+                                        <th>Marca</th>
+                                        <th>Producto</th>
+                                        <th>Cantidad (Und)</th>
+                                        <th>Puntos</th>
+                                        <th>Subtotal (USD)</th>
                                     </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                                </thead>
+                                <tbody>
+                                    @for(productos of getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.productos; track $index){
+                                        <tr>
+                                            <td>{{productos.linea}}</td>
+                                            <td>{{productos.marca}}</td>
+                                            <td>{{productos.producto}}</td>
+                                            <td>{{productos.cantidad}}</td>
+                                            <td>{{productos.puntosTotales}}</td>
+                                            <td>{{productos.subtotal}} $</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        
+                        </div>
+                    } 
                 </div>
+                
+            </div>
+            <br>
             }
         </div>
     </div>

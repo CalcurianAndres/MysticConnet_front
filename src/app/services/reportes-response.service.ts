@@ -24,7 +24,7 @@ export class ReportesResponseService {
 
   public productos = computed( () => this.#state().reportes );
   public loading = computed( () => this.#state().loading ); 
-  public ruta = 'http://localhost:4000/api'
+  public ruta = 'mysticconnectserver-production.up.railway.app/api'
 
   constructor() { }
 
@@ -86,7 +86,7 @@ export class ReportesResponseService {
                         subtotal: prod.producto.precio * prod.cantidad,
                         puntosTotales: prod.producto.puntos * prod.cantidad
                     })),
-                    fecha: reporte.createdAt,
+                    fecha: reporte.fecha,
                     totalPuntos: puntosReporte, // Agregar total de puntos por reporte
                     totalSubtotal: precioReporte, // Agregar total de gastos por reporte
                 });
@@ -110,6 +110,13 @@ export class ReportesResponseService {
       // Actualizar el estado agregando el nuevo producto
       this.cargarReportes()
     });
+  }
+
+  formatFecha(date:any): string {
+      const dia = ('0' + date.getDate()).slice(-2);
+      const mes = ('0' + (date.getMonth() + 1)).slice(-2);  // Mes 0-based, así que sumamos 1
+      const anio = date.getFullYear();
+      return `${dia}/${mes}/${anio}`;
   }
 
 

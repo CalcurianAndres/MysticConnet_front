@@ -14,7 +14,7 @@ import Swal from 'sweetalert2';
 })
 export default class LoginComponent implements OnInit{
 
-  private loginService = inject(LoginService);
+  public loginService = inject(LoginService);
   private router = inject(Router)
 
   ngOnInit(): void {
@@ -64,7 +64,6 @@ export default class LoginComponent implements OnInit{
         position:'top-end'
       });
     } else {
-      console.log(resp);
       localStorage.setItem('TOKEN_SESSION', resp.token);
       this.router.navigateByUrl('/dashboard')
       // Handle successful login response here

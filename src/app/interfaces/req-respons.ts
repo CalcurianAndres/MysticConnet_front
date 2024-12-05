@@ -5,7 +5,9 @@ export interface promotoras{
     region:     string;
     telefono:   string;
     sueldo:     string;
-    role:       'Admin' | 'Promotora'
+    role:       'Admin' | 'Promotora';
+    restringido :boolean;
+    estado?:     'habilitada' | 'inhabilitada';
     borrado?:   boolean;
     foto?:      string;
     _id?:       string;
@@ -28,7 +30,7 @@ export interface productos{
 export interface clientes{
     cliente:    string;
     rif:        string;
-    informacion:string;
+    marca:      string;
     _id?:       string;
     createdAt?: Date;
     updatedAt?: Date;
@@ -40,6 +42,7 @@ export interface reportesResponse{
     productos: arrayProductosPopulated[];
     tipo:       string;
     observacion:string;
+    fecha      :string;
     evento?:    string;
     _id?:       string;
     createdAt?: Date;
@@ -58,6 +61,7 @@ export interface reportes{
     productos: arrayProductos[];
     tipo:       string;
     observacion:string;
+    fecha      :string;
     evento?:    string;
     _id?:       string;
     createdAt?: Date;
@@ -80,9 +84,9 @@ export interface ReporteSimplificado {
     tipo: string; // Tipo del reporte
     observacion: string; // Observación del reporte
     productos: ProductoSimplificado[]; // Productos asociados al reporte
-    fecha?: Date; // Fecha del reporte
     totalPuntos: number, // Agregar total de puntos por reporte
     totalSubtotal: number, // Agregar total de gastos por reporte
+    fecha?: string; // Fecha del reporte
 }
 
 export interface ProductoSimplificado {
@@ -92,4 +96,32 @@ export interface ProductoSimplificado {
     cantidad: number; // Cantidad de productos reportados
     subtotal: number; // Subtotal calculado (precio * cantidad)
     puntosTotales: number; // Subtotal calculado (precio * cantidad)
+}
+
+export interface planificacion {
+    mes   : string;
+    inicio: string;
+    cierre: string;
+    metas: {
+        tradicional:{
+            mystic:metas,
+            qerametik:metas
+        },
+        rebranding:{
+            mystic:metas,
+            qerametik:metas
+        }
+    },
+    incentivos:incentivos_[]
+}
+
+export interface metas {
+    impulso: number;
+    evento : number;
+}
+
+export interface incentivos_{
+    de:number,
+    hasta:number,
+    incentivo:number
 }

@@ -7,7 +7,11 @@
             </span> <br>
             <b style="font-weight: bold;">Zona: </b>{{loginSevice.usuario.region}} <br>
             <span class="subtitle" style="color: rgb(212, 212, 212);">
-                {{date_log}}
+                <div class="field is-grouped">
+                    <div class="control">
+                        <input type="date" class="input" [value]="date_log" [max]="date_log" (change)="verFormato($event.target)" [disabled]="loginSevice.usuario.restringido">
+                    </div>
+                </div>
             </span>
         </div>
     </div>
@@ -22,17 +26,28 @@
             </button>
         </header>
         <div class="card-content" [ngClass]="{'oculto':!Informacion(), 'activo':Informacion()}">
-            <div class="field">
+            <div class="field is-grouped">
                 <div class="control">
-                    <label for="" class="label">Establecimiento</label>
+                    <label for="" class="label">Marca</label>
                     <div class="select">
-                        <select [(ngModel)]="establecimiento">
-                            @for (clientes of ClientServices.clientes(); track $index) {
-                                <option value="{{clientes._id}}">{{clientes.cliente}}</option>
-                            }
+                        <select [(ngModel)]="marca_seleccionada" (change)="establecimiento = '' ">
+                            <option value="Mystic">Mystic</option>
+                            <option value="Qerametik">Qerametik</option>
                         </select>
                     </div>
                 </div>
+                @if(marca_seleccionada){
+                    <div class="control">
+                        <label for="" class="label">Establecimiento</label>
+                        <div class="select">
+                            <select [(ngModel)]="establecimiento">
+                                @for (clientes of ClientServices.ClientePorMarca(marca_seleccionada); track $index) {
+                                    <option value="{{clientes._id}}">{{clientes.cliente}}</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                }
             </div>
             <div class="field is-grouped">
                 <div class="control">
@@ -68,7 +83,7 @@
                       </div>
                   </div>
               }
-              @if (establecimiento && tipo) {
+              @if (establecimiento && tipo && marca_seleccionada) {
                 @if(tipo != 'Evento'){
                     <button class="button is-primary" (click)="NextStep()">
                         <span class="icon"><i class="fas fa-long-arrow-alt-right"></i></span>
@@ -103,7 +118,7 @@
                                             <span class="icon"><i class="fas fa-plus-square"></i></span>
                                         </button>
                                     </td>
-                                    <td>{{producto.producto}}</td>
+                                    <td>{{producto.producto}} ({{producto.linea}})</td>
                                 </tr>
                             }
                         </thead>
@@ -126,7 +141,7 @@
                                             <span class="icon"><i class="fas fa-trash-alt"></i></span>
                                         </button>
                                     </td>
-                                    <td>{{productoAgregado.producto.producto}}</td>
+                                    <td>{{productoAgregado.producto.marca}} - {{productoAgregado.producto.producto}} ({{productoAgregado.producto.linea}})</td>
                                     <td style="width: 30px"><input type="number" class="input" placeholde="Cantidad vendida" [(ngModel)]="productoAgregado.cantidad"></td>
                                 </tr>
                             } @empty {

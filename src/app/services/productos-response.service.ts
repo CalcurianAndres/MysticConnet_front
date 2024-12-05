@@ -23,7 +23,7 @@ export class ProductosResponseService {
 
   public productos = computed( () => this.#state().productos );
   public loading = computed( () => this.#state().loading ); 
-  public ruta = 'http://localhost:4000/api'
+  public ruta = 'mysticconnectserver-production.up.railway.app/api'
 
 
 
@@ -45,7 +45,7 @@ export class ProductosResponseService {
           productos: sortedProductos
         });
       });
-  }
+    }
 
   NuevoProducto = async (data: productos) => {
     // Cambiar el estado a "cargando"

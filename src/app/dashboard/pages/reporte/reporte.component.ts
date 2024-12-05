@@ -21,30 +21,32 @@ export default class ReporteComponent {
   public ReportesServices = inject(ReportesResponseService)
   public loginSevice = inject(LoginService)
 
-public searchTerm: string = ''; // Término de búsqueda
-public filteredProductos:productos[] = []; // Productos filtrados
-public Informacion = signal(true)//con esto se muestra la información del despacho
-public isRotated = signal(false);
-public ProductosSelected:{producto:productos, cantidad:number}[] = [];
+  public searchTerm: string = ''; // Término de búsqueda
+  public filteredProductos:productos[] = []; // Productos filtrados
+  public Informacion = signal(true)//con esto se muestra la información del despacho
+  public isRotated = signal(false);
+  public ProductosSelected:{producto:productos, cantidad:number}[] = [];
 
-public establecimiento:string = '';
-public tipo:string = '';
-public tipo_evento:string = '';
-public obervacion:string = '';
+  public establecimiento:string = '';
+  public tipo:string = '';
+  public tipo_evento:string = '';
+  public obervacion:string = '';
 
-public date_log:string = ''
+  public date_log:string = ''
 
-public CargadaInformacion = signal(false);
+  public CargadaInformacion = signal(false);
 
-public data:reportes =
-  {
-    promotora: this.loginSevice.usuario._id,
-    cliente:'',
-    productos:[],
-    tipo:'',
-    observacion:''
-  }
+  public data:reportes =
+    {
+      promotora: this.loginSevice.usuario._id,
+      cliente:'',
+      productos:[],
+      tipo:'',
+      observacion:'',
+      fecha:this.date_log
+    }
 
+  public marca_seleccionada = ''
 
   constructor(){
     this.date_log = this.getFormattedDate()
@@ -58,7 +60,7 @@ filterProductos(): void {
   } else {
     // Si no está vacío, filtrar los productos según el término de búsqueda
     this.filteredProductos = this.ProductosServices.productos().filter(producto =>
-      producto.producto.toLowerCase().includes(this.searchTerm.toLowerCase())
+      producto.producto.toLowerCase().includes(this.searchTerm.toLowerCase()) && producto.marca === this.marca_seleccionada
     );
   }
 }
@@ -83,7 +85,7 @@ getFormattedDate(): string {
   hours = hours ? hours : 12; // La hora 0 debe ser 12
 
   // Formatear la fecha en el formato deseado
-  const formattedDate = `${day}/${month}/${year} ${hours}:${minutes}:${seconds} ${ampm}`;
+  const formattedDate = `${year}-${month}-${day}`;
 
   return formattedDate;
 }
@@ -156,6 +158,8 @@ Reportar(){
       }));
       this.data.observacion = this.obervacion;
 
+      this.data.fecha = this.date_log
+
       this.ReportesServices.NuevoReporte(this.data)
 
       this.data = {
@@ -163,7 +167,8 @@ Reportar(){
         cliente:'',
         productos:[],
         tipo:'',
-        observacion:''
+        observacion:'',
+        fecha:this.date_log
       }
 
       this.ProductosSelected = []
@@ -183,6 +188,11 @@ NextStep(){
   this.isRotated.update(value => true);
   this.Informacion.update(value => false);
 }
+
+verFormato(e:any){
+  console.log(e.value)
+}
+
 
 
 }

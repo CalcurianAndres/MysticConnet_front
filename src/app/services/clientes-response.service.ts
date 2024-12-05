@@ -3,8 +3,8 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { clientes } from '@interfaces/req-respons';
 
 interface State {
-  clientes:clientes[],
-  loading:boolean
+  clientes: clientes[],
+  loading: boolean
 }
 
 @Injectable({
@@ -20,16 +20,16 @@ export class ClientesResponseService {
     clientes: []
   })
 
-  public clientes = computed( () => this.#state().clientes );
-  public loading = computed( () => this.#state().loading ); 
-  public ruta = 'http://localhost:4000/api'
+  public clientes = computed(() => this.#state().clientes);
+  public loading = computed(() => this.#state().loading);
+  public ruta = 'mysticconnectserver-production.up.railway.app/api'
 
 
 
 
   constructor() {
     this.cargarClientes();
-   }
+  }
 
 
   cargarClientes() {
@@ -37,12 +37,16 @@ export class ClientesResponseService {
       .subscribe(res => {
         // Ordenar alfabéticamente por la propiedad `producto`
         const sortedProductos = res.sort((a, b) => a.cliente.localeCompare(b.cliente));
-  
+
         this.#state.set({
           loading: false,
           clientes: sortedProductos
         });
       });
+  }
+
+  ClientePorMarca(marca:string){
+    return this.clientes().filter(cliente => cliente.marca === marca)
   }
 
   NuevoCliente = async (data: clientes) => {
@@ -51,7 +55,7 @@ export class ClientesResponseService {
       ...this.#state(),
       loading: true,
     });
-  
+
     // Enviar la solicitud al servidor
     this.http.post<clientes>(`${this.ruta}/clientes`, data).subscribe((res) => {
       // Actualizar el estado agregando el nuevo producto
@@ -63,19 +67,19 @@ export class ClientesResponseService {
     });
   }
 
-  EliminarCliente = async(id:clientes["_id"]) => {
+  EliminarCliente = async (id: clientes["_id"]) => {
     // Cambiar el estado a "cargando"
     this.#state.set({
       ...this.#state(),
       loading: true,
     });
 
-    this.http.delete(`${this.ruta}/clientes/${id}`).subscribe((res) =>{
+    this.http.delete(`${this.ruta}/clientes/${id}`).subscribe((res) => {
       this.cargarClientes();
     })
   }
 
-  EditarClientes = async(data:clientes) =>{
+  EditarClientes = async (data: clientes) => {
     // Cambiar el estado a "cargando"
     this.#state.set({
       ...this.#state(),
@@ -86,7 +90,7 @@ export class ClientesResponseService {
     this.http.put<clientes>(`${this.ruta}/clientes/${data._id}`, data).subscribe((res) => {
       // Actualizar el estado agregando el nuevo usuario
       this.cargarClientes();
-    }); 
+    });
   }
 
 }

@@ -23,13 +23,13 @@ export class ClientesComponent {
   public data:clientes = {
     cliente:'',
     rif:'',
-    informacion:''
+    marca:''
   }
 
 
   // Variables para paginación
   currentPage: number = 1;
-  itemsPerPage: number = 10;
+  itemsPerPage: number = 200;
   
   get totalItems(): number {
     return this.clientService.clientes().length;
@@ -64,7 +64,7 @@ cerrarEdicion(){
   this.data = {
     cliente:'',
     rif:'',
-    informacion:''
+    marca:''
   }
 }
 

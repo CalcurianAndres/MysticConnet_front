@@ -4,10 +4,11 @@ import { UserResponseService } from '@services/user-response.service';
 import { LoadingsComponent } from '@shared/loadings/loadings.component';
 import { ModalPromotorasComponent } from './modal-promotoras/modal-promotoras.component';
 import Swal from 'sweetalert2';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-promotoras',
-  imports: [LoadingsComponent, ModalPromotorasComponent],
+  imports: [LoadingsComponent, ModalPromotorasComponent, CommonModule],
   templateUrl: './promotoras.component.html',
   styleUrl: './promotoras.component.scss'
 })
@@ -25,6 +26,7 @@ export class PromotorasComponent {
     telefono:'',
     region:'',
     sueldo:'',
+    restringido:true,
     role:'Promotora'
   };
 
@@ -72,6 +74,7 @@ cerrarEdicion(){
     telefono:'',
     region:'',
     sueldo:'',
+    restringido:true,
     role:'Promotora'
   }
 }
@@ -85,7 +88,7 @@ Editar(empleada:promotoras){
 
 ElimiarPromotora(promotora:promotoras){
   Swal.fire({
-    title: `¿Eliminar esta promotora ${promotora.nombre} ${promotora.apellido}?`,
+    title: `¿Eliminar esta promotora: ${promotora.nombre} ${promotora.apellido}?`,
     text: "¿Estas segura que quieres eliminar a esta promotora? aun podras ver reportes anteriores pero no podra generar nuevos",
     icon: "question",
     showCancelButton: true,
@@ -109,6 +112,74 @@ ElimiarPromotora(promotora:promotoras){
       });
     }
   });
+}
+
+inhabilitarPromotora(promotora:promotoras, estado:'habilitada' | 'inhabilitada'){
+
+
+  let title;
+  let text;
+  let title2;
+  let text2;
+  let boton;
+  let color;
+  let color2;
+
+  if(estado === 'habilitada'){
+    title = `¿habilitar esta promotora: ${promotora.nombre} ${promotora.apellido}?`
+    text = `¿Estas segura que quieres habilitar a esta promotora?`
+    title2 = 'Habilitada'
+    text2='La promotora ahora esta habilitada'
+    boton = 'Habilitar'
+    color = "#3085d6"
+    color2 = "#d33"
+  }else{
+    title = `¿Inhabilitar esta promotora: ${promotora.nombre} ${promotora.apellido}?`,
+    text = `¿Estas segura que quieres inhabilitar a esta promotora? aun podras ver reportes anteriores pero no podra generar nuevos`
+    title2 = "Inhabilitada"
+    text2="La promotora fue Inhabilitada de la lista"
+    boton = 'Inhabilitar'
+    color2 = "#3085d6"
+    color = "#d33"
+  }
+
+  Swal.fire({
+    title: title, 
+    text: text,
+    icon: "question",
+    showCancelButton: true,
+    confirmButtonColor: color,
+    cancelButtonColor: color2,
+    confirmButtonText: boton
+  }).then((result) => {
+    if (result.isConfirmed) {
+
+      promotora.estado = estado;
+
+      this.UserService.EditarPromotora(promotora);
+
+      Swal.fire({
+        title: title2,
+        text: text2,
+        icon: "success",
+        showConfirmButton:false,
+        timer:5000,
+        toast:true,
+        timerProgressBar:true,
+        position:'top-end'
+      });
+    }
+  });
+
+}
+
+
+activarCalendario(promotora:promotoras){
+
+  promotora.restringido = !promotora.restringido
+  this.UserService.EditarPromotora(promotora);
+
+  
 }
 
 

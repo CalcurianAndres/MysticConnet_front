@@ -24,7 +24,7 @@ export const routes: Routes = [
             },
             {
                 path:'estadisticas',
-                title:'Reportes',
+                title:'Estadísticas',
                 loadComponent: () => import('./dashboard/pages/estadisticas/estadisticas.component')
             },
             {

@@ -31,15 +31,25 @@
 
         @for (empleada of paginatedPromotoras; track $index) {
             <tr>
-                <td>{{empleada.nombre}} {{empleada.apellido}}</td>
-                <td>{{empleada.correo}}</td>
-                <td>{{empleada.telefono}}</td>
-                <td>{{empleada.region}}</td>
-                <td>{{empleada.sueldo}} $</td>
-                <td>{{empleada.role}}</td>
+                <td [ngClass]="{'inhabilitado':empleada.estado === 'inhabilitada'}">{{empleada.nombre}} {{empleada.apellido}}</td>
+                <td [ngClass]="{'inhabilitado':empleada.estado === 'inhabilitada'}">{{empleada.correo}}</td>
+                <td [ngClass]="{'inhabilitado':empleada.estado === 'inhabilitada'}">{{empleada.telefono}}</td>
+                <td [ngClass]="{'inhabilitado':empleada.estado === 'inhabilitada'}">{{empleada.region}}</td>
+                <td [ngClass]="{'inhabilitado':empleada.estado === 'inhabilitada'}">{{empleada.sueldo}} $</td>
+                <td [ngClass]="{'inhabilitado':empleada.estado === 'inhabilitada'}">{{empleada.role}}</td>
                 <td>
                   <i class="fas fa-user-edit" style="color: rgb(129, 228, 129); cursor: pointer;" (click)="Editar(empleada)"></i> 
-                  <i class="fas fa-user-minus" style="color: rgb(228, 129, 129); cursor: pointer;" (click)="ElimiarPromotora(empleada)"></i>
+                  <i class="fas fa-user-minus" style="color: rgb(228, 129, 129); cursor: pointer;" (click)="ElimiarPromotora(empleada)"></i> 
+                  @if(empleada.estado != 'inhabilitada'){
+                    <i class="fas fa-user-slash" style="color: rgb(228, 177, 129); cursor: pointer;" (click)="inhabilitarPromotora(empleada, 'inhabilitada')"></i> 
+                  } @else {
+                    <i class="fas fa-user-check" style="color: rgb(129, 228, 129); cursor: pointer;" (click)="inhabilitarPromotora(empleada, 'habilitada')"></i> 
+                  }
+                  @if(empleada.restringido){
+                    <i class="fas fa-calendar-check" style="color: rgb(228, 129, 129);" (click)="activarCalendario(empleada)"></i> 
+                  }@else {
+                    <i class="fas fa-calendar-check" style="color: rgb(129, 228, 129);" (click)="activarCalendario(empleada)"></i> 
+                  }
                 </td>
             </tr>
         } @empty {
