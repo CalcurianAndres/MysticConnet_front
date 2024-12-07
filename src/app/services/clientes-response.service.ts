@@ -22,7 +22,7 @@ export class ClientesResponseService {
 
   public clientes = computed(() => this.#state().clientes);
   public loading = computed(() => this.#state().loading);
-  public ruta = 'mysticconnectserver-production.up.railway.app/api'
+  public ruta = 'https://mysticconnectserver-production.up.railway.app/api'
 
 
 

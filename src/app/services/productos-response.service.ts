@@ -23,7 +23,7 @@ export class ProductosResponseService {
 
   public productos = computed( () => this.#state().productos );
   public loading = computed( () => this.#state().loading ); 
-  public ruta = 'mysticconnectserver-production.up.railway.app/api'
+  public ruta = 'https://mysticconnectserver-production.up.railway.app/api'
 
 
 
