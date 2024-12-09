@@ -1,75 +1,76 @@
-export interface promotoras{
-    nombre:     string;
-    apellido:   string;
-    correo:     string;
-    region:     string;
-    telefono:   string;
-    sueldo:     string;
-    role:       'Admin' | 'Promotora';
-    restringido :boolean;
-    estado?:     'habilitada' | 'inhabilitada';
-    borrado?:   boolean;
-    foto?:      string;
-    _id?:       string;
+export interface promotoras {
+    nombre: string;
+    apellido: string;
+    correo: string;
+    region: string;
+    telefono: string;
+    sueldo: string;
+    role: 'Admin' | 'Promotora';
+    restringido: boolean;
+    fija: boolean;
+    estado?: 'habilitada' | 'inhabilitada';
+    borrado?: boolean;
+    foto?: string;
+    _id?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-export interface productos{
-    linea:      string;
-    marca:      string;
-    producto:   string;
-    puntos:     number;
-    precio:     number;
-    _id?:       string;
+export interface productos {
+    linea: string;
+    marca: string;
+    producto: string;
+    puntos: number;
+    precio: number;
+    _id?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
 
-export interface clientes{
-    cliente:    string;
-    rif:        string;
-    marca:      string;
-    _id?:       string;
+export interface clientes {
+    cliente: string;
+    rif: string;
+    marca: 'Mystic' | 'Qerametik';
+    _id?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-export interface reportesResponse{
+export interface reportesResponse {
     promotora: promotoras;
-    cliente:   clientes;
+    cliente: clientes;
     productos: arrayProductosPopulated[];
-    tipo:       string;
-    observacion:string;
-    fecha      :string;
-    evento?:    string;
-    _id?:       string;
+    tipo: string;
+    observacion: string;
+    fecha: string;
+    evento?: string;
+    _id?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
 
-export interface arrayProductosPopulated{
-    producto:productos;
-    cantidad:number;
+export interface arrayProductosPopulated {
+    producto: productos;
+    cantidad: number;
 }
 
 
-export interface reportes{
+export interface reportes {
     promotora: promotoras['_id'];
-    cliente:   clientes['_id'];
+    cliente: clientes['_id'];
     productos: arrayProductos[];
-    tipo:       string;
-    observacion:string;
-    fecha      :string;
-    evento?:    string;
-    _id?:       string;
+    tipo: string;
+    observacion: string;
+    fecha: string;
+    evento?: string;
+    _id?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
-export interface arrayProductos{
-    producto:productos['_id'];
-    cantidad:number;
+export interface arrayProductos {
+    producto: productos['_id'];
+    cantidad: number;
 }
 
 export interface ReporteAgrupado {
@@ -81,6 +82,7 @@ export interface ReporteAgrupado {
 
 export interface ReporteSimplificado {
     cliente: string; // Nombre del cliente
+    marca: 'Mystic' | 'Qerametik';
     tipo: string; // Tipo del reporte
     observacion: string; // Observación del reporte
     productos: ProductoSimplificado[]; // Productos asociados al reporte
@@ -99,29 +101,29 @@ export interface ProductoSimplificado {
 }
 
 export interface planificacion {
-    mes   : string;
+    mes: string;
     inicio: string;
     cierre: string;
     metas: {
-        tradicional:{
-            mystic:metas,
-            qerametik:metas
+        tradicional: {
+            mystic: metas,
+            qerametik: metas
         },
-        rebranding:{
-            mystic:metas,
-            qerametik:metas
+        rebranding: {
+            mystic: metas,
+            qerametik: metas
         }
     },
-    incentivos:incentivos_[]
+    incentivos: incentivos_[]
 }
 
 export interface metas {
     impulso: number;
-    evento : number;
+    evento: number;
 }
 
-export interface incentivos_{
-    de:number,
-    hasta:number,
-    incentivo:number
+export interface incentivos_ {
+    de: number,
+    hasta: number,
+    incentivo: number
 }

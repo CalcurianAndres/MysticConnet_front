@@ -3,29 +3,31 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { planificacion } from '@interfaces/req-respons';
 
 interface State {
-  planificacion:planificacion[],
-  loading:boolean
+  planificacion: planificacion[],
+  loading: boolean
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class PlanificacionService {
-  
-    private http = inject(HttpClient)
 
-    #state = signal<State>({
-      loading: true,
-      planificacion: []
-    })
-
-    public planificacion = computed( () => this.#state().planificacion );
-    public loading = computed( () => this.#state().loading ); 
-    public ruta = 'https://mysticconnectserver-production.up.railway.app/api'
+  private http = inject(HttpClient)
 
 
+  #state = signal<State>({
+    loading: true,
+    planificacion: []
+  })
 
-  constructor() { 
+
+  public planificacion = computed(() => this.#state().planificacion);
+  public loading = computed(() => this.#state().loading);
+  public ruta = 'http://localhost:8080/api'
+
+
+
+  constructor() {
     this.cargarPlanificacion()
   }
 
@@ -46,7 +48,7 @@ export class PlanificacionService {
       ...this.#state(),
       loading: true,
     });
-  
+
     // Enviar la solicitud al servidor
     this.http.post<planificacion>(`${this.ruta}/planificacion`, data).subscribe((res) => {
       // Actualizar el estado agregando el nuevo producto

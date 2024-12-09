@@ -4,8 +4,8 @@ import { promotoras } from '@interfaces/req-respons';
 import { delay } from 'rxjs';
 
 interface State {
-  promotoras:promotoras[],
-  loading:boolean
+  promotoras: promotoras[],
+  loading: boolean
 }
 
 @Injectable({
@@ -17,32 +17,32 @@ export class UserResponseService {
 
   private http = inject(HttpClient)
 
-  public users = computed( () => this.#state().promotoras );
-  public loading = computed( () => this.#state().loading ); 
+  public users = computed(() => this.#state().promotoras);
+  public loading = computed(() => this.#state().loading);
 
   #state = signal<State>({
     loading: true,
     promotoras: []
   })
 
-  public ruta = 'https://mysticconnectserver-production.up.railway.app/api'
-  
-  
-  constructor() { 
-    
+  public ruta = 'http://localhost:8080/api'
+
+
+  constructor() {
+
     this.cargarPromotoras();
-    
+
   }
-  
-  
-  cargarPromotoras(){
+
+
+  cargarPromotoras() {
     this.http.get<promotoras[]>(`${this.ruta}/users`)
-    .subscribe( res => {
-      this.#state.set({
-        loading: false,
-        promotoras:res
+      .subscribe(res => {
+        this.#state.set({
+          loading: false,
+          promotoras: res
+        })
       })
-    })
   }
 
 
@@ -52,7 +52,7 @@ export class UserResponseService {
       ...this.#state(),
       loading: true,
     });
-  
+
     // Enviar la solicitud al servidor
     this.http.post<promotoras>(`${this.ruta}/users`, data).subscribe((res) => {
       // Actualizar el estado agregando el nuevo usuario
@@ -64,7 +64,7 @@ export class UserResponseService {
     });
   };
 
-  EditarPromotora = async(data:promotoras) =>{
+  EditarPromotora = async (data: promotoras) => {
     // Cambiar el estado a "cargando"
     this.#state.set({
       ...this.#state(),
@@ -76,17 +76,17 @@ export class UserResponseService {
       // Actualizar el estado agregando el nuevo usuario
       this.cargarPromotoras();
     });
-    
+
   }
 
-  eliminarPromotora = async(id:promotoras["_id"]) => {
+  eliminarPromotora = async (id: promotoras["_id"]) => {
     // Cambiar el estado a "cargando"
     this.#state.set({
       ...this.#state(),
       loading: true,
     });
 
-    this.http.delete(`${this.ruta}/users/${id}`).subscribe((res) =>{
+    this.http.delete(`${this.ruta}/users/${id}`).subscribe((res) => {
       this.cargarPromotoras();
     })
   }

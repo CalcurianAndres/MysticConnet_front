@@ -7,10 +7,12 @@ import { TitleComponent } from '@shared/title/title.component';
 import { PlanificacionComponent } from './planificacion/planificacion.component';
 import { UserResponseService } from '@services/user-response.service';
 import { PlanificacionService } from '@services/planificacion.service';
+import { LoadingsComponent } from '@shared/loadings/loadings.component';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-estadisticas',
-  imports: [TitleComponent, CommonModule, FormsModule, PlanificacionComponent],
+  imports: [TitleComponent, CommonModule, FormsModule, PlanificacionComponent, LoadingsComponent, RouterModule],
   templateUrl: './estadisticas.component.html',
   styleUrl: './estadisticas.component.scss'
 })
@@ -19,23 +21,20 @@ export default class EstadisticasComponent {
   public ReportesServices = inject(ReportesResponseService);
   public promotoras = inject(UserResponseService);
   public planificacionService = inject(PlanificacionService)
-  public active:boolean = false;
+  public active: boolean = false;
+  indexPlanificacion: any = null
 
 
   reportesAgrupados: ReporteAgrupado[] = []; // Lista para almacenar los datos
-  inicio: string = '2024-12-03';
-  cierre: string = '2024-12-06';
-
   togglePromotora: boolean[] = [];
   toggleVentas: { [key: number]: boolean[] } = {};
-
   isRotated: boolean[] = []
   isRotated_: { [key: number]: boolean[] } = {};
 
-  constructor(){
+  constructor() {
 
-     // Consumir el servicio y asignar los datos
-     this.ReportesServices.getReportesAgrupados().subscribe({
+    // Consumir el servicio y asignar los datos
+    this.ReportesServices.getReportesAgrupados().subscribe({
       next: (reportes) => {
         this.reportesAgrupados = reportes;
         console.log(this.reportesAgrupados)
@@ -44,6 +43,12 @@ export default class EstadisticasComponent {
         console.error('Error al cargar los reportes:', error);
       }
     });
+
+    setTimeout(() => {
+      if (!this.planificacionService.loading()) {
+        this.indexPlanificacion = this.planificacionService.planificacion().length - 1
+      }
+    }, 1000);
 
   }
 
@@ -60,13 +65,13 @@ export default class EstadisticasComponent {
   }
 
 
-  getPuntos(nombre: string, apellido:string): number {
+  getPuntos(nombre: string, apellido: string): number {
     const reporte = this.reportesAgrupados.find(r => r.promotora === `${nombre} ${apellido}`);
     return reporte ? reporte.puntosAcumulados : 0;
   }
 
   // Función para obtener los gastos acumulados por una promotora
-  getGastado(nombre: string, apellido:string): number {
+  getGastado(nombre: string, apellido: string): number {
     const reporte = this.reportesAgrupados.find(r => r.promotora === `${nombre} ${apellido}`);
     return reporte ? reporte.totalGastado : 0;
   }
@@ -75,51 +80,117 @@ export default class EstadisticasComponent {
     const nombreCompleto = `${nombre} ${apellido}`;
     const reporte = this.reportesAgrupados.find(r => r.promotora === nombreCompleto);
     return reporte ? reporte.reportes : [];
-}
-
-getFechasDelRango(): string[] {
-  const start = new Date(this.inicio);
-  const end = new Date(this.cierre);
-  const fechas: string[] = [];
-
-  while (start <= end) {
-    fechas.push(this.formatFecha(start));  // Agregar la fecha formateada al array
-    start.setDate(start.getDate() + 1);  // Avanzar un día
   }
 
-  return fechas;
-}
+  getFechasDelRango(): string[] {
+    const hoy = new Date();
+    const manana = new Date(hoy); // Crear una nueva instancia para no modificar `hoy`
+    manana.setDate(hoy.getDate() + 1); // Agregar un día
+    let end = manana;
+    const start = new Date(this.planificacionService.planificacion()[this.indexPlanificacion].inicio);
+    if (new Date(this.planificacionService.planificacion()[this.indexPlanificacion].cierre) <= hoy) {
+      end = new Date(this.planificacionService.planificacion()[this.indexPlanificacion].cierre);
+    }
+    const fechas: string[] = [];
 
-formatFecha(date: Date): string {
-  const dia = ('0' + date.getDate()).slice(-2);
-  const mes = ('0' + (date.getMonth() + 1)).slice(-2);  // Mes 0-based, así que sumamos 1
-  const anio = date.getFullYear();
-  return `${dia}/${mes}/${anio}`;
-}
+    while (start <= end) {
+      fechas.push(this.formatFecha(start));  // Agregar la fecha formateada al array
+      start.setDate(start.getDate() + 1);  // Avanzar un día
+    }
 
-getReportesPorFecha(nombre: string, apellido: string, fecha: string) {
-  const nombreCompleto = `${nombre} ${apellido}`;
-  const fechaFormateada = this.convertirFechaAISO(fecha); // Asegúrate de usar el mismo formato
-  const reporte = this.reportesAgrupados.find(r => r.promotora === nombreCompleto);
-  if(reporte){
-    let detallado = reporte.reportes.find(reporte => reporte.fecha ===  fechaFormateada)
-      if(detallado){
+    return fechas;
+  }
+
+  formatFecha(date: Date): string {
+    const dia = ('0' + date.getDate()).slice(-2);
+    const mes = ('0' + (date.getMonth() + 1)).slice(-2);  // Mes 0-based, así que sumamos 1
+    const anio = date.getFullYear();
+    return `${dia}/${mes}/${anio}`;
+  }
+
+  getReportesPorFecha(nombre: string, apellido: string, fecha: string) {
+    const nombreCompleto = `${nombre} ${apellido}`;
+    const fechaFormateada = this.convertirFechaAISO(fecha); // Asegúrate de usar el mismo formato
+    const reporte = this.reportesAgrupados.find(r => r.promotora === nombreCompleto);
+    if (reporte) {
+      let detallado = reporte.reportes.find(reporte => reporte.fecha === fechaFormateada)
+      if (detallado) {
         return detallado
-      }else{
+      } else {
         return
       }
-  }else{
-    return
+    } else {
+      return
+    }
   }
-}
 
-convertirFechaAISO(fecha: string): string {
-  // Dividir la fecha en día, mes y año
-  const [dia, mes, año] = fecha.split('/');
+  convertirFechaAISO(fecha: string): string {
+    // Dividir la fecha en día, mes y año
+    const [dia, mes, año] = fecha.split('/');
 
-  // Devolver la fecha en formato ISO (yyyy-mm-dd)
-  return `${año}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
-}
+    // Devolver la fecha en formato ISO (yyyy-mm-dd)
+    return `${año}-${mes.padStart(2, '0')}-${dia.padStart(2, '0')}`;
+  }
+
+  calcularDiasHabiles(inicio: string, cierre: string): number {
+
+    let InicioFormated = new Date(inicio)
+    let CierreFormated = new Date(cierre)
+
+    let diasHabiles = 0;
+
+    // Asegurarse de que 'inicio' sea anterior a 'cierre'
+    if (InicioFormated > CierreFormated) {
+      // Si la fecha de inicio es mayor que la de cierre, intercambiarlas
+      let temp = InicioFormated;
+      InicioFormated = CierreFormated;
+      CierreFormated = temp;
+    }
+
+    // Iteramos por cada día entre las dos fechas
+    let fechaActual = new Date(InicioFormated);
+
+    while (fechaActual <= CierreFormated) {
+      const diaSemana = fechaActual.getDay(); // getDay() devuelve el día de la semana (0=domingo, 1=lunes, ..., 6=sábado)
+
+      // Si el día no es sábado (6) ni domingo (0), es un día hábil
+      if (diaSemana !== 0 && diaSemana !== 6) {
+        diasHabiles++;
+      }
+
+      // Pasamos al siguiente día
+      fechaActual.setDate(fechaActual.getDate() + 1);
+    }
+
+    return diasHabiles;
+  }
+
+  puntos(puntos: any) {
+    if (!puntos) {
+      return 0
+    } else {
+      return puntos
+    }
+  }
+
+  obtenerIncentivo(puntos: number, incentivos: any) {
+    // Si los puntos son menores que el mínimo del primer rango
+    if (puntos < incentivos[0].de) {
+      return 0;  // No hay incentivo
+    }
+
+    // Iteramos a través de los incentivos
+    for (let i = 0; i < incentivos.length; i++) {
+      let incentivo = incentivos[i];
+
+      // Verificamos si los puntos están dentro del rango
+      if (puntos >= incentivo.de && puntos <= incentivo.hasta) {
+        return incentivo.incentivo;  // Devolvemos el incentivo
+      }
+    }
+
+    return 0;  // Si no está en ningún rango, devolvemos 0
+  }
 
 
 }

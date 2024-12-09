@@ -3,13 +3,13 @@ import { authGuard } from '@auth/auth.guard';
 
 export const routes: Routes = [
     {
-        path:'dashboard',
+        path: 'dashboard',
         loadComponent: () => import('./dashboard/dashboard.component'),
         canActivate: [authGuard], // Protege esta ruta
-        children:[
+        children: [
             {
-                path:'administracion',
-                title:'Administración',
+                path: 'administracion',
+                title: 'Administración',
                 loadComponent: () => import('./dashboard/pages/administracion/administracion.component')
             },
             // {
@@ -18,30 +18,35 @@ export const routes: Routes = [
             //     loadComponent: () => import('./dashboard/pages/perfil/perfil.component')
             // },
             {
-                path:'reportes',
-                title:'Reportes',
+                path: 'reportes',
+                title: 'Reportes',
                 loadComponent: () => import('./dashboard/pages/reporte/reporte.component')
             },
             {
-                path:'estadisticas',
-                title:'Estadísticas',
-                loadComponent: () => import('./dashboard/pages/estadisticas/estadisticas.component')
+                path: 'estadisticas',
+                title: 'Estadísticas',
+                loadComponent: () => import('./dashboard/pages/estadisticas/estadisticas.component'),
             },
             {
-                path:'',
-                redirectTo:'reportes',
-                pathMatch:'full'
+                path: 'charts',
+                title: 'Estadísticas',
+                loadComponent: () => import('./dashboard/pages/estadisticas/graficas/graficas.component')
+            },
+            {
+                path: '',
+                redirectTo: 'reportes',
+                pathMatch: 'full'
             }
         ]
     },
     {
-        path:'login',
-        title:'Mystic Connect',
+        path: 'login',
+        title: 'Mystic Connect',
         loadComponent: () => import('./login/login.component')
     },
     {
-        path:'',
-        redirectTo:'/dashboard',
-        pathMatch:'full'
+        path: '',
+        redirectTo: '/dashboard',
+        pathMatch: 'full'
     }
 ];

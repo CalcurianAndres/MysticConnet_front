@@ -5,14 +5,14 @@ import { promotoras } from '@interfaces/req-respons';
 import { catchError, map, Observable, of, tap } from 'rxjs';
 
 interface LoginForm {
-  correo:string,
-  password:string
+  correo: string,
+  password: string
 }
 
 interface loginResponse {
-  ok:boolean,
-  usuario:promotoras,
-  token?:string
+  ok: boolean,
+  usuario: promotoras,
+  token?: string
 }
 
 @Injectable({
@@ -22,38 +22,38 @@ export class LoginService {
 
   private http = inject(HttpClient)
   private router = inject(Router)
-  public ruta = 'https://mysticconnectserver-production.up.railway.app/api'
+  public ruta = 'http://localhost:8080/api'
 
-  public usuario!:promotoras
+  public usuario!: promotoras
 
   public isBrowser = () => typeof window !== 'undefined' && window.document;
 
-  get token():string{
+  get token(): string {
     if (this.isBrowser()) {
       return localStorage.getItem('TOKEN_SESSION') || '';
-    }else{
+    } else {
       return ''
     }
   }
 
-  get headers(){
+  get headers() {
     return {
-      'Authorization':this.token
+      'Authorization': this.token
     }
   }
 
-  get Correo_session():string{
-    if(this.isBrowser()){
+  get Correo_session(): string {
+    if (this.isBrowser()) {
       return localStorage.getItem('SESSION_EMAIL') || '';
-    }else{
+    } else {
       return ''
     }
   }
 
-  get Nombre_session():string{
-    if(this.isBrowser()){
+  get Nombre_session(): string {
+    if (this.isBrowser()) {
       return localStorage.getItem('SESSION_USER_NAME') || '';
-    }else{
+    } else {
       return ''
     }
   }
@@ -61,12 +61,12 @@ export class LoginService {
 
   constructor() { }
 
-  Login(data:LoginForm, recuerdame:boolean){
+  Login(data: LoginForm, recuerdame: boolean) {
     const url = `${this.ruta}/login`
-    if(recuerdame && this.isBrowser()){
+    if (recuerdame && this.isBrowser()) {
       localStorage.setItem('SESSION_EMAIL', data.correo);
     }
-    return this.http.post(url,data)
+    return this.http.post(url, data)
   }
 
   validarToken(): Observable<boolean> {
@@ -75,16 +75,16 @@ export class LoginService {
     }).pipe(
       tap((resp: any) => {
         this.usuario = resp.usuario;
-        if(this.isBrowser()){
+        if (this.isBrowser()) {
           localStorage.setItem('TOKEN_SESSION', resp.token);
-    
+
           // Verificar si existe la sesión local 'SESSION_EMAIL'
           if (localStorage.getItem('SESSION_EMAIL')) {
             // Almacenar el nombre del usuario en otra sesión
             localStorage.setItem('SESSION_USER_NAME', this.usuario.nombre);
           }
         }
-  
+
         // localStorage.setItem('menu', JSON.stringify( resp.menu) );
       }),
       map(resp => true),
@@ -92,15 +92,15 @@ export class LoginService {
     );
   }
 
-  logout(){
-    if(this.isBrowser()){
+  logout() {
+    if (this.isBrowser()) {
       localStorage.removeItem('TOKEN_SESSION');
       this.router.navigateByUrl('login');
     }
   }
 
-  borrar_Session(){
-    if(this.isBrowser()){
+  borrar_Session() {
+    if (this.isBrowser()) {
       localStorage.removeItem('SESSION_EMAIL');
       localStorage.removeItem('SESSION_USER_NAME');
     }

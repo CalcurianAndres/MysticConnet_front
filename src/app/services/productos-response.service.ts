@@ -3,8 +3,8 @@ import { computed, inject, Injectable, signal } from '@angular/core';
 import { productos } from '@interfaces/req-respons';
 
 interface State {
-  productos:productos[],
-  loading:boolean
+  productos: productos[],
+  loading: boolean
 }
 
 @Injectable({
@@ -21,31 +21,31 @@ export class ProductosResponseService {
   })
 
 
-  public productos = computed( () => this.#state().productos );
-  public loading = computed( () => this.#state().loading ); 
-  public ruta = 'https://mysticconnectserver-production.up.railway.app/api'
+  public productos = computed(() => this.#state().productos);
+  public loading = computed(() => this.#state().loading);
+  public ruta = 'http://localhost:8080/api'
 
 
 
   constructor() {
-    
+
     this.cargarProductos();
 
-   }
+  }
 
 
-   cargarProductos() {
+  cargarProductos() {
     this.http.get<productos[]>(`${this.ruta}/productos`)
       .subscribe(res => {
         // Ordenar alfabéticamente por la propiedad `producto`
         const sortedProductos = res.sort((a, b) => a.producto.localeCompare(b.producto));
-  
+
         this.#state.set({
           loading: false,
           productos: sortedProductos
         });
       });
-    }
+  }
 
   NuevoProducto = async (data: productos) => {
     // Cambiar el estado a "cargando"
@@ -53,7 +53,7 @@ export class ProductosResponseService {
       ...this.#state(),
       loading: true,
     });
-  
+
     // Enviar la solicitud al servidor
     this.http.post<productos>(`${this.ruta}/productos`, data).subscribe((res) => {
       // Actualizar el estado agregando el nuevo producto
@@ -65,7 +65,7 @@ export class ProductosResponseService {
     });
   }
 
-  EditarPromotora = async(data:productos) =>{
+  EditarPromotora = async (data: productos) => {
     // Cambiar el estado a "cargando"
     this.#state.set({
       ...this.#state(),
@@ -76,17 +76,17 @@ export class ProductosResponseService {
     this.http.put<productos>(`${this.ruta}/productos/${data._id}`, data).subscribe((res) => {
       // Actualizar el estado agregando el nuevo usuario
       this.cargarProductos();
-    }); 
+    });
   }
 
-  EliminarProducto = async(id:productos["_id"]) => {
+  EliminarProducto = async (id: productos["_id"]) => {
     // Cambiar el estado a "cargando"
     this.#state.set({
       ...this.#state(),
       loading: true,
     });
 
-    this.http.delete(`${this.ruta}/productos/${id}`).subscribe((res) =>{
+    this.http.delete(`${this.ruta}/productos/${id}`).subscribe((res) => {
       this.cargarProductos();
     })
   }

@@ -22,7 +22,7 @@ export class ClientesResponseService {
 
   public clientes = computed(() => this.#state().clientes);
   public loading = computed(() => this.#state().loading);
-  public ruta = 'https://mysticconnectserver-production.up.railway.app/api'
+  public ruta = 'http://localhost:8080/api'
 
 
 
@@ -45,7 +45,7 @@ export class ClientesResponseService {
       });
   }
 
-  ClientePorMarca(marca:string){
+  ClientePorMarca(marca: string) {
     return this.clientes().filter(cliente => cliente.marca === marca)
   }
 
