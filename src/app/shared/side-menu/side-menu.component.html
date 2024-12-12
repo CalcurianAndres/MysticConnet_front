@@ -1,10 +1,9 @@
-
 <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
   <div class="navbar-brand">
     <a class="navbar-item" href="/">
-      <img src="../../../assets/logo_wb.png" alt="MysticConnet">
+      <img src="../../../assets/logo.jpg" alt="MysticConnet" style="border-radius: 500;">
     </a>
-    
+
 
     <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" (click)="toggleMenu()">
       <span aria-hidden="true"></span>
@@ -18,7 +17,7 @@
       <a class="navbar-link">
         Menú
       </a>
-  
+
       <div class="navbar-dropdown">
         <a class="navbar-item" routerLink="administracion">
           Administración
@@ -38,7 +37,7 @@
         <a class="navbar-link">
           {{LoginService.usuario.nombre}} {{LoginService.usuario.apellido}}
         </a>
-    
+
         <div class="navbar-dropdown">
           <a class="navbar-item" (click)="logout()">
             Cerrar sesión
@@ -55,7 +54,7 @@
 
   <div class="navbar-menu is-active" id="navMenu" *ngIf="mobile">
     <a class="navbar-item" (click)="logout()">
-        Cerrar sesión
+      Cerrar sesión
     </a>
   </div>
 </nav>
