@@ -192,5 +192,18 @@ export default class EstadisticasComponent {
     return 0;  // Si no está en ningún rango, devolvemos 0
   }
 
+  noHuboReporteAyer(nombre: string, apellido: string): boolean {
+    const fechaAyer = new Date();
+    fechaAyer.setDate(fechaAyer.getDate() - 1);
+
+    // Formato 'YYYY/mm/dd'
+    const year = fechaAyer.getFullYear();
+    const month = String(fechaAyer.getMonth() + 1).padStart(2, '0'); // Los meses van de 0-11
+    const day = String(fechaAyer.getDate()).padStart(2, '0');
+    const fechaAyerStr = `${day}/${month}/${year}`;
+
+    return !this.getReportesPorFecha(nombre, apellido, fechaAyerStr);
+  }
+
 
 }

@@ -1,15 +1,8 @@
-<div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
-    <div class="card-content">
-        <app-title title="Estadísticas" />
-        <span class="subtitle" style="color: white;">Gráficas</span>
-    </div>
-</div>
-<hr>
-
 <div class="columns">
     <div class="column">
         <div class="card">
             <div class="card-content">
+                <span class="title">Marca mas vendida</span> <br>
                 <canvas id="marcas"></canvas>
             </div>
         </div>
@@ -17,6 +10,7 @@
     <div class="column">
         <div class="card">
             <div class="card-content">
+                <span class="title">Linea mas vendida</span> <br>
                 <canvas id="lineas"></canvas>
             </div>
         </div>
@@ -24,7 +18,30 @@
     <div class="column">
         <div class="card">
             <div class="card-content">
-                <canvas id="productos"></canvas>
+                <span class="title">TOP 3 Promotoras</span> <br>
+                <canvas id="top3"></canvas>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-content">
+                <span class="title">Mas vendidos</span> <br>
+                <table class="table is-fullwidth">
+                    <thead>
+                        <tr>
+                            <th>Mystic</th>
+                            <th>Qerametik</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>{{contarTotalesPorMarcaYLinea(ServiceReportes.reportes()).productoMasVendidoPorMarca.Mystic}}
+                            </td>
+                            <td>{{contarTotalesPorMarcaYLinea(ServiceReportes.reportes()).productoMasVendidoPorMarca.Qerametik}}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
             </div>
         </div>
     </div>

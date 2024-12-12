@@ -9,7 +9,7 @@ import { UserResponseService } from '@services/user-response.service';
 
 @Component({
   selector: 'app-graficas',
-  imports: [TitleComponent],
+  imports: [],
   templateUrl: './graficas.component.html',
   styleUrl: './graficas.component.scss'
 })
@@ -18,7 +18,7 @@ export default class GraficasComponent implements OnInit {
   public marcas_chart!: Chart;
   public lineas_chart!: Chart;
   public vendedoras_chart!: Chart;
-  public productos_chart!: Chart;
+  public top3_chart!: Chart;
 
   public Reportes!: ReporteAgrupado[];
 
@@ -28,41 +28,14 @@ export default class GraficasComponent implements OnInit {
   public vendedoras!: any;
   public marcas!: any;
   public lineas!: any;
-
-  vendidos = {
-    labels: [
-      'producto 1',
-      'producto 2',
-      'producto 3',
-      'producto 4',
-      'producto 5',
-    ],
-    datasets: [{
-      label: 'Marca mas vendida',
-      data: [500, 462, 302, 101, 95],
-      backgroundColor: [
-        'rgba(255, 99, 132, .2)', // color 1
-        'rgba(54, 162, 235, .2)', // color 2
-        'rgba(255, 206, 86, .2)', // color 3
-        'rgba(75, 192, 192, .2)', // color 4
-        'rgba(153, 102, 255, .2)', // color 5
-      ],
-      borderColor: [
-        'rgb(255, 99, 132)',    // color 1
-        'rgb(54, 162, 235)',    // color 2
-        'rgb(255, 206, 86)',    // color 3
-        'rgb(75, 192, 192)',    // color 4
-        'rgb(153, 102, 255)',   // color 5
-      ],
-      hoverOffset: 4
-    }]
-  };
+  public top3!: any;
 
   ngOnInit() {
 
     const canvasVendedoras = document.getElementById('vendedoras') as HTMLCanvasElement;
     const canvasMarcas = document.getElementById('marcas') as HTMLCanvasElement;
     const canvasLineas = document.getElementById('lineas') as HTMLCanvasElement;
+    const canvasTop3 = document.getElementById('top3') as HTMLCanvasElement;
 
     this.ServiceReportes.getReportesAgrupados().subscribe(res => {
       this.Reportes = res;
@@ -74,6 +47,37 @@ export default class GraficasComponent implements OnInit {
         labels.push(`${promotoras.nombre} ${promotoras.apellido}`);
         data.push(this.getPuntos(promotoras.nombre, promotoras.apellido)); // Cambiar por puntosAcumulados si es necesario
       })
+
+      // Suponiendo que contarTotalesPorMarcaYLinea devuelve un objeto con top3Promotoras
+      const top3Data = this.contarTotalesPorMarcaYLinea(this.ServiceReportes.reportes()).top3Promotoras;
+
+      // Extraemos los nombres y las ventas totales de las promotoras
+      const labels_ = top3Data.map(promotora => promotora.nombre);
+      const data_ = top3Data.map(promotora => promotora.totalVentas);
+
+      console.log(top3Data, '<=>', labels_, '<=>', data_)
+
+      // Asignamos los valores a this.top3
+      this.top3 = {
+        labels: labels_,
+        datasets: [{
+          axis: 'y',
+          label: 'Ventas realizadas',
+          data: data_,
+          fill: false,
+          backgroundColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(255, 159, 64, 1)',
+            'rgba(255, 205, 86, 1)',
+          ],
+          borderColor: [
+            'rgb(255, 99, 132)',
+            'rgb(255, 159, 64)',
+            'rgb(255, 205, 86)',
+          ],
+          borderWidth: 1
+        }]
+      };
 
       this.vendedoras = {
         labels: labels,
@@ -237,8 +241,8 @@ export default class GraficasComponent implements OnInit {
           label: 'Marca mas vendida',
           data: [this.contarTotalesPorMarcaYLinea(this.ServiceReportes.reportes()).Mystic, this.contarTotalesPorMarcaYLinea(this.ServiceReportes.reportes()).Qerametik],
           backgroundColor: [
-            'rgba(255, 99, 132, .5)',
-            'rgba(54, 162, 235, .5)',
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
           ],
           borderColor: [
             'rgb(255, 99, 132)',
@@ -257,8 +261,8 @@ export default class GraficasComponent implements OnInit {
           label: 'Marca mas vendida',
           data: [this.contarTotalesPorMarcaYLinea(this.ServiceReportes.reportes()).Tradicional, this.contarTotalesPorMarcaYLinea(this.ServiceReportes.reportes()).Rebranding],
           backgroundColor: [
-            'rgba(255, 99, 132, .5)',
-            'rgba(54, 162, 235, .5)',
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
           ],
           borderColor: [
             'rgb(255, 99, 132)',
@@ -284,15 +288,18 @@ export default class GraficasComponent implements OnInit {
         data: this.lineas
       });
 
+      this.top3_chart = new Chart(canvasTop3, {
+        type: 'bar',
+        data: this.top3,
+        options: {
+          indexAxis: 'y',
+        }
+      });
+
     });
 
-    const canvasProductos = document.getElementById('productos') as HTMLCanvasElement;
 
 
-    this.productos_chart = new Chart(canvasProductos, {
-      type: 'pie',
-      data: this.vendidos
-    })
 
 
 
@@ -303,20 +310,47 @@ export default class GraficasComponent implements OnInit {
     return reporte ? reporte.puntosAcumulados : 0;
   }
 
-  contarTotalesPorMarcaYLinea(reportes: any[]): { Mystic: number, Qerametik: number, Tradicional: number, Rebranding: number } {
+  contarTotalesPorMarcaYLinea(reportes: any[]): {
+    Mystic: number,
+    Qerametik: number,
+    Tradicional: number,
+    Rebranding: number,
+    top3Promotoras: { nombre: string, totalVentas: number }[],
+    productoMasVendidoPorMarca: { Mystic: string, Qerametik: string }
+  } {
     let cantidadMystic = 0;
     let cantidadQerametik = 0;
     let cantidadTradicional = 0;
     let cantidadRebranding = 0;
 
+    // Objeto para acumular las ventas por promotora
+    const ventasPorPromotora: { [promotoraId: string]: number } = {};
+
+    // Objetos para acumular las ventas de productos por marca
+    const ventasPorProductoMystic: { [productoId: string]: { nombre: string, cantidad: number } } = {};
+    const ventasPorProductoQerametik: { [productoId: string]: { nombre: string, cantidad: number } } = {};
+
     // Recorrer todos los reportes y productos para contar las cantidades
     reportes.forEach((reporte) => {
+      // Iterar sobre los productos de cada reporte
       reporte.productos.forEach((item: any) => {
         // Contar la cantidad por marca
         if (item.producto.marca === 'Mystic') {
           cantidadMystic += item.cantidad;
+          // Acumular ventas por producto de Mystic
+          if (ventasPorProductoMystic[item.producto._id]) {
+            ventasPorProductoMystic[item.producto._id].cantidad += item.cantidad;
+          } else {
+            ventasPorProductoMystic[item.producto._id] = { nombre: item.producto.producto, cantidad: item.cantidad };
+          }
         } else if (item.producto.marca === 'Qerametik') {
           cantidadQerametik += item.cantidad;
+          // Acumular ventas por producto de Qerametik
+          if (ventasPorProductoQerametik[item.producto._id]) {
+            ventasPorProductoQerametik[item.producto._id].cantidad += item.cantidad;
+          } else {
+            ventasPorProductoQerametik[item.producto._id] = { nombre: item.producto.producto, cantidad: item.cantidad };
+          }
         }
 
         // Contar la cantidad por línea
@@ -325,16 +359,50 @@ export default class GraficasComponent implements OnInit {
         } else if (item.producto.linea === 'Rebranding') {
           cantidadRebranding += item.cantidad;
         }
+
+        // Acumular ventas por promotora
+        const promotoraId = `${reporte.promotora.nombre} ${reporte.promotora.apellido}`; // Nombre completo de la promotora
+        if (ventasPorPromotora[promotoraId]) {
+          ventasPorPromotora[promotoraId] += item.cantidad;
+        } else {
+          ventasPorPromotora[promotoraId] = item.cantidad;
+        }
       });
     });
+
+    // Ordenar los productos más vendidos por marca y obtener el nombre
+    const productoMasVendidoMystic = Object.entries(ventasPorProductoMystic)
+      .reduce((prev, curr) => (curr[1].cantidad > prev[1].cantidad ? curr : prev), ['', { nombre: '', cantidad: 0 }]);
+    const productoMasVendidoQerametik = Object.entries(ventasPorProductoQerametik)
+      .reduce((prev, curr) => (curr[1].cantidad > prev[1].cantidad ? curr : prev), ['', { nombre: '', cantidad: 0 }]);
+
+    // Obtener los nombres de los productos más vendidos por marca
+    const productoMasVendidoPorMarca = {
+      Mystic: productoMasVendidoMystic[1].nombre, // Nombre del producto más vendido de Mystic
+      Qerametik: productoMasVendidoQerametik[1].nombre // Nombre del producto más vendido de Qerametik
+    };
+
+    // Ordenar las promotoras por el total de ventas (de mayor a menor)
+    const top3Promotoras = Object.entries(ventasPorPromotora)
+      .map(([promotoraId, totalVentas]) => ({ promotoraId, totalVentas }))
+      .sort((a, b) => b.totalVentas - a.totalVentas) // Ordenar de mayor a menor
+      .slice(0, 3) // Obtener las 3 principales
+      .map((promotora) => ({
+        nombre: promotora.promotoraId, // Nombre completo de la promotora
+        totalVentas: promotora.totalVentas
+      }));
 
     return {
       Mystic: cantidadMystic,
       Qerametik: cantidadQerametik,
       Tradicional: cantidadTradicional,
-      Rebranding: cantidadRebranding
+      Rebranding: cantidadRebranding,
+      top3Promotoras: top3Promotoras,
+      productoMasVendidoPorMarca: productoMasVendidoPorMarca
     };
   }
+
+
 
 
 }

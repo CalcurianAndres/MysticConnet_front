@@ -8,133 +8,141 @@
         <div class="modal-card-body">
             <div class="banner">
                 @if(servicePlanificacion.loading()){
-                    <app-loadings></app-loadings>
+                <app-loadings></app-loadings>
                 } @else {
-                    <span style="font-size: xx-large;">Plan mensual</span>
-                    <hr>
-                    <div class="field is-grouped">
-                        <div class="control">
-                            <label for="" class="label">Mes</label>
-                            <div class="select">
-                                <select [(ngModel)]="data.mes">
-                                    <option value="Enero">Enero</option>
-                                    <option value="Febrero">Febrero</option>
-                                    <option value="Marzo">Marzo</option>
-                                    <option value="Abril">Abril</option>
-                                    <option value="Mayo">Mayo</option>
-                                    <option value="Junio">Junio</option>
-                                    <option value="Julio">Julio</option>
-                                    <option value="Agosto">Agosto</option>
-                                    <option value="Septiembre">Septiembre</option>
-                                    <option value="Octubre">Octubre</option>
-                                    <option value="Noviembre">Noviembre</option>
-                                    <option value="Diciembre">Diciembre</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="control">
-                            <label for="" class="label">Inicio</label>
-                            <input type="date" name="" id="" class="input" [(ngModel)]="data.inicio">
-                        </div>
-                        <div class="control">
-                            <label for="" class="label">Cierre</label>
-                            <input type="date" name="" id="" class="input" [(ngModel)]="data.cierre">
+                <span style="font-size: xx-large;">Plan mensual</span>
+                <hr>
+                <div class="field is-grouped">
+                    <div class="control">
+                        <label for="" class="label">Mes</label>
+                        <div class="select">
+                            <select [(ngModel)]="data.mes">
+                                <option value="Enero">Enero</option>
+                                <option value="Febrero">Febrero</option>
+                                <option value="Marzo">Marzo</option>
+                                <option value="Abril">Abril</option>
+                                <option value="Mayo">Mayo</option>
+                                <option value="Junio">Junio</option>
+                                <option value="Julio">Julio</option>
+                                <option value="Agosto">Agosto</option>
+                                <option value="Septiembre">Septiembre</option>
+                                <option value="Octubre">Octubre</option>
+                                <option value="Noviembre">Noviembre</option>
+                                <option value="Diciembre">Diciembre</option>
+                            </select>
                         </div>
                     </div>
-                    <hr>
-                    <span style="font-size: x-large;">Metas</span> <br> <br>
-                
-                    <div class="columns">
-                        <div class="column">
-                            <span style="font-weight: bolder;">Mystic (Linea tradicional)</span>
-                            <div class="field is-grouped">
-                                <div class="control">
-                                    <label for="" class="label">Impulso (Semanal)</label>
-                                    <input type="number" name="" id="" class="input" [(ngModel)]="data.metas.tradicional.mystic.impulso">
-                                </div>
-                                <div class="control">
-                                    <label for="" class="label">Evento</label>
-                                    <input type="number" name="" id="" class="input" [(ngModel)]="data.metas.tradicional.mystic.evento">
-                                </div>
-                            </div>
-                            <span style="font-weight: bolder;">Qerametik (Linea tradicional)</span>
-                            <div class="field is-grouped">
-                                <div class="control">
-                                    <label for="" class="label">Impulso (Semanal)</label>
-                                    <input type="number" name="" id="" class="input" [(ngModel)]="data.metas.tradicional.qerametik.impulso">
-                                </div>
-                                <div class="control">
-                                    <label for="" class="label">Evento</label>
-                                    <input type="number" name="" id="" class="input" [(ngModel)]="data.metas.tradicional.qerametik.evento">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="column">
-                            <span style="font-weight: bolder;">Mystic (Rebranding)</span>
-                            <div class="field is-grouped">
-                                <div class="control">
-                                    <label for="" class="label">Impulso (Semanal)</label>
-                                    <input type="number" name="" id="" class="input" [(ngModel)]="data.metas.rebranding.mystic.impulso">
-                                </div>
-                                <div class="control">
-                                    <label for="" class="label">Evento</label>
-                                    <input type="number" name="" id="" class="input" [(ngModel)]="data.metas.rebranding.mystic.evento">
-                                </div>
-                            </div>
-                            <span style="font-weight: bolder;">Qerametik (Rebranding)</span>
-                            <div class="field is-grouped">
-                                <div class="control">
-                                    <label for="" class="label">Impulso (Semanal)</label>
-                                    <input type="number" name="" id="" class="input" [(ngModel)]="data.metas.rebranding.qerametik.impulso">
-                                </div>
-                                <div class="control">
-                                    <label for="" class="label">Evento</label>
-                                    <input type="number" name="" id="" class="input" [(ngModel)]="data.metas.rebranding.qerametik.evento">
-                                </div>
-                            </div>
-                        </div>
+                    <div class="control">
+                        <label for="" class="label">Inicio</label>
+                        <input type="date" name="" id="" class="input" [(ngModel)]="data.inicio">
                     </div>
-                    <hr>
-    
-                    <span style="font-size: x-large;">
-                        Incentivos por ventas
-                    </span>
-                    <br><br>
-                
-                    @for(metas_ of [].constructor(metas); track $index; let i = $index){
+                    <div class="control">
+                        <label for="" class="label">Cierre</label>
+                        <input type="date" name="" id="" class="input" [(ngModel)]="data.cierre">
+                    </div>
+                </div>
+                <hr>
+                <span style="font-size: x-large;">Metas</span> <br> <br>
+
+                <div class="columns">
+                    <div class="column">
+                        <span style="font-weight: bolder;">Mystic (Promotoras fijas)</span>
                         <div class="field is-grouped">
                             <div class="control">
-                                <label for="" class="label">de (puntos)</label>
-                                <input type="number" name="" id="" class="input" [(ngModel)]="data.incentivos[i].de">
+                                <label for="" class="label">Impulso (Semanal)</label>
+                                <input type="number" name="" id="" class="input"
+                                    [(ngModel)]="data.metas.tradicional.mystic.impulso">
                             </div>
                             <div class="control">
-                                <label for="" class="label">hasta (puntos)</label>
-                                <input type="number" name="" id="" class="input" [(ngModel)]="data.incentivos[i].hasta">
+                                <label for="" class="label">Evento</label>
+                                <input type="number" name="" id="" class="input"
+                                    [(ngModel)]="data.metas.tradicional.mystic.evento">
                             </div>
-                            <div class="control">
-                                <label for="" class="label">Incentivo (USD)</label>
-                                <input type="number" name="" id="" class="input" [(ngModel)]="data.incentivos[i].incentivo">
-                            </div>
-                            @if(i === metas - 1){
-                                <div class="control">
-                                    <label for="" class="label"> </label>
-                                    <button class="button is-success" (click)="addMeta()">
-                                        <span class="icon"><i class="fas fa-plus"></i></span>
-                                    </button>
-                                </div>
-                                @if(i > 0){
-                                    <div class="control">
-                                        <label for="" class="label"> </label>
-                                        <button class="button is-danger" (click)="removeMeta(i)">
-                                            <span class="icon"><i class="fas fa-minus"></i></span>
-                                        </button>
-                                    </div>
-                                }
-                            }
                         </div>
+                        <span style="font-weight: bolder;">Qerametik (Promotoras fijas)</span>
+                        <div class="field is-grouped">
+                            <div class="control">
+                                <label for="" class="label">Impulso (Semanal)</label>
+                                <input type="number" name="" id="" class="input"
+                                    [(ngModel)]="data.metas.tradicional.qerametik.impulso">
+                            </div>
+                            <div class="control">
+                                <label for="" class="label">Evento</label>
+                                <input type="number" name="" id="" class="input"
+                                    [(ngModel)]="data.metas.tradicional.qerametik.evento">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="column">
+                        <span style="font-weight: bolder;">Mystic</span>
+                        <div class="field is-grouped">
+                            <div class="control">
+                                <label for="" class="label">Impulso (Semanal)</label>
+                                <input type="number" name="" id="" class="input"
+                                    [(ngModel)]="data.metas.rebranding.mystic.impulso">
+                            </div>
+                            <div class="control">
+                                <label for="" class="label">Evento</label>
+                                <input type="number" name="" id="" class="input"
+                                    [(ngModel)]="data.metas.rebranding.mystic.evento">
+                            </div>
+                        </div>
+                        <span style="font-weight: bolder;">Qerametik</span>
+                        <div class="field is-grouped">
+                            <div class="control">
+                                <label for="" class="label">Impulso (Semanal)</label>
+                                <input type="number" name="" id="" class="input"
+                                    [(ngModel)]="data.metas.rebranding.qerametik.impulso">
+                            </div>
+                            <div class="control">
+                                <label for="" class="label">Evento</label>
+                                <input type="number" name="" id="" class="input"
+                                    [(ngModel)]="data.metas.rebranding.qerametik.evento">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+
+                <span style="font-size: x-large;">
+                    Incentivos por ventas
+                </span>
+                <br><br>
+
+                @for(metas_ of [].constructor(metas); track $index; let i = $index){
+                <div class="field is-grouped">
+                    <div class="control">
+                        <label for="" class="label">de (puntos)</label>
+                        <input type="number" name="" id="" class="input" [(ngModel)]="data.incentivos[i].de">
+                    </div>
+                    <div class="control">
+                        <label for="" class="label">hasta (puntos)</label>
+                        <input type="number" name="" id="" class="input" [(ngModel)]="data.incentivos[i].hasta">
+                    </div>
+                    <div class="control">
+                        <label for="" class="label">Incentivo (USD)</label>
+                        <input type="number" name="" id="" class="input" [(ngModel)]="data.incentivos[i].incentivo">
+                    </div>
+                    @if(i === metas - 1){
+                    <div class="control">
+                        <label for="" class="label"> </label>
+                        <button class="button is-success" (click)="addMeta()">
+                            <span class="icon"><i class="fas fa-plus"></i></span>
+                        </button>
+                    </div>
+                    @if(i > 0){
+                    <div class="control">
+                        <label for="" class="label"> </label>
+                        <button class="button is-danger" (click)="removeMeta(i)">
+                            <span class="icon"><i class="fas fa-minus"></i></span>
+                        </button>
+                    </div>
                     }
-                    
-                    <br>
+                    }
+                </div>
+                }
+
+                <br>
                 }
                 <button class="button is-success" (click)="crearPlanificacion()">
                     <span>Crear Planificación</span>

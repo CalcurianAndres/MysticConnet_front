@@ -1,0 +1,102 @@
+<span class="title">Promotoras</span>
+<hr>
+<table class="table is-fullwidth is-striped">
+    <thead>
+        <tr>
+            <th>Promotora</th>
+            <th (click)="ordenarPor('conteoMetaUnidades')">
+                Meta alcanzada
+                {{ ordenActual.ascendente ? '▲' : '▼' }}
+            </th>
+            <th (click)="ordenarPor('productosVendidos')">
+                Productos vendidos
+                {{ ordenActual.ascendente ? '▲' : '▼' }}
+            </th>
+            <th (click)="ordenarPor('puntosAcumulados')">
+                Puntuación
+                {{ ordenActual.ascendente ? '▲' : '▼' }}
+            </th>
+            <th>Incentivo</th>
+            <th (click)="ordenarPor('totalGastado')">
+                Monto Und. vendidas
+                {{ ordenActual.ascendente ? '▲' : '▼' }}
+            </th>
+            <th>Incidencia</th>
+            <th>Sueldo</th>
+            <th>Sueldo por dia</th>
+            <th>Ventas por dia</th>
+            <th>incidencia</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (promotora of reportesAgrupadosOrdenados; track $index) {
+
+        <tr>
+            <td>{{promotora.promotora}}</td>
+            <td>{{promotora.conteoMetaUnidades}}
+                @if(promotora.conteoMetaUnidades === 1){
+                vez
+                } @else {
+                veces
+                }
+            </td>
+            <td>{{promotora.productosVendidos}}</td>
+            <td>{{promotora.puntosAcumulados}}</td>
+            <td>{{obtenerIncentivo(promotora.puntosAcumulados,
+                planificacionService.planificacion()[indexPlanificacion].incentivos) | currency:'USD'}}</td>
+            <td>{{promotora.totalGastado | currency:'USD'}}</td>
+            <td>{{(obtenerIncentivo(promotora.puntosAcumulados,
+                planificacionService.planificacion()[indexPlanificacion].incentivos) / promotora.totalGastado) * 100 |
+                number:'1.2-2'}}%</td>
+            <td>{{BuscarInfo(promotora.promotora)?.sueldo}}</td>
+            <td>{{puntos(BuscarInfo(promotora.promotora)?.sueldo) / promotora.reportes.length | currency:'USD'}}</td>
+            <td>{{promotora.totalGastado / promotora.reportes.length | currency:'USD'}}</td>
+            <td>{{(puntos(BuscarInfo(promotora.promotora)?.sueldo) / promotora.reportes.length) /
+                (promotora.totalGastado / promotora.reportes.length) * 100 | number:'1.2-2'}}%</td>
+        </tr>
+
+        }
+    </tbody>
+</table>
+
+<span class="title">Clientes</span>
+<hr>
+
+<div class="columns">
+    <div class="column">
+        <table class="table is-fullwidth is-striped">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Total Productos Vendidos</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (cliente of clientesConProductos; track $index) {
+                <tr>
+                    <td>{{ cliente.cliente }}</td>
+                    <td>{{ cliente.totalProductos }}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="column">
+        <table class="table is-fullwidth is-striped">
+            <thead>
+                <tr>
+                    <th>Zona</th>
+                    <th>Total Productos Vendidos</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (zona of ventasPorZona; track $index) {
+                <tr>
+                    <td>{{ zona.zona }}</td>
+                    <td>{{ zona.totalProductos }}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

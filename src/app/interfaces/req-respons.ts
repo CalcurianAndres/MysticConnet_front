@@ -77,6 +77,8 @@ export interface ReporteAgrupado {
     promotora: string; // Nombre completo de la promotora
     puntosAcumulados: number; // Total de puntos acumulados
     totalGastado: number; // Total del dinero gastado
+    productosVendidos: number;
+    conteoMetaUnidades: number,
     reportes: ReporteSimplificado[]; // Lista de reportes asociados
 }
 

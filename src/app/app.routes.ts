@@ -30,7 +30,7 @@ export const routes: Routes = [
             {
                 path: 'charts',
                 title: 'Estadísticas',
-                loadComponent: () => import('./dashboard/pages/estadisticas/graficas/graficas.component')
+                loadComponent: () => import('./dashboard/pages/estadisticas/reportes-generales/reportes-generales.component')
             },
             {
                 path: '',

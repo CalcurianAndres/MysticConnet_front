@@ -32,3 +32,25 @@
   color: rgb(129, 228, 129);
   font-weight: bolder;
 }
+
+.punto-rojo {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  background-color: red;
+  border-radius: 50%;
+  animation: parpadeo 1s infinite;
+  margin-left: 5px;
+}
+
+@keyframes parpadeo {
+
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0;
+  }
+}

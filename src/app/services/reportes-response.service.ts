@@ -24,7 +24,7 @@ export class ReportesResponseService {
 
   public reportes = computed(() => this.#state().reportes);
   public loading = computed(() => this.#state().loading);
-  public ruta = 'http://localhost:8080/api'
+  public ruta = 'https://mysticconnectserver-production.up.railway.app/api'
 
   constructor() {
     this.cargarReportes();
@@ -55,12 +55,13 @@ export class ReportesResponseService {
               promotora: `${reporte.promotora.nombre} ${reporte.promotora.apellido}`,
               puntosAcumulados: 0,
               totalGastado: 0,
+              productosVendidos: 0,
+              conteoMetaUnidades: 0, // Agregamos este contador
               reportes: [],
             } as ReporteAgrupado;
           }
 
-
-          // Calcular los puntos totales y el precio total de cada reporte
+          // Calcular los puntos totales, el precio total y la cantidad de productos de cada reporte
           const puntosReporte = reporte.productos.reduce(
             (suma, prod) => suma + prod.producto.puntos * prod.cantidad,
             0
@@ -71,9 +72,20 @@ export class ReportesResponseService {
             0
           );
 
-          // Acumulamos los puntos y el total gastado para la promotora
+          const cantidadProductos = reporte.productos.reduce(
+            (suma, prod) => suma + prod.cantidad,
+            0
+          );
+
+          // Verificar si la promotora alcanzó la meta de 30 unidades en este reporte
+          if (cantidadProductos >= 30) {
+            result[promotoraId].conteoMetaUnidades += 1;
+          }
+
+          // Acumulamos los puntos, el total gastado y la cantidad de productos para la promotora
           result[promotoraId].puntosAcumulados += puntosReporte;
           result[promotoraId].totalGastado += precioReporte;
+          result[promotoraId].productosVendidos += cantidadProductos;
 
           // Agregar el reporte a la lista de reportes de la promotora
           result[promotoraId].reportes.push({
@@ -87,21 +99,23 @@ export class ReportesResponseService {
               marca: prod.producto.marca,
               cantidad: prod.cantidad,
               subtotal: prod.producto.precio * prod.cantidad,
-              puntosTotales: prod.producto.puntos * prod.cantidad
+              puntosTotales: prod.producto.puntos * prod.cantidad,
             })),
             fecha: reporte.fecha,
-            totalPuntos: puntosReporte, // Agregar total de puntos por reporte
-            totalSubtotal: precioReporte, // Agregar total de gastos por reporte
+            totalPuntos: puntosReporte,
+            totalSubtotal: precioReporte,
           });
 
           return result;
         }, {} as Record<string, ReporteAgrupado>);
 
-        // Convertir el objeto de reportes agrupados en un arreglo para devolverlo
-        return Object.values(agrupados);
+        // Convertir el objeto de reportes agrupados en un arreglo para devolverlo y ordenarlo
+        console.log(Object.values(agrupados).sort((a, b) => b.productosVendidos - a.productosVendidos))
+        return Object.values(agrupados).sort((a, b) => b.productosVendidos - a.productosVendidos);
       })
     );
   }
+
 
 
 

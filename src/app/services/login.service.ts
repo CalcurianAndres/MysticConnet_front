@@ -22,7 +22,7 @@ export class LoginService {
 
   private http = inject(HttpClient)
   private router = inject(Router)
-  public ruta = 'http://localhost:8080/api'
+  public ruta = 'https://mysticconnectserver-production.up.railway.app/api'
 
   public usuario!: promotoras
 

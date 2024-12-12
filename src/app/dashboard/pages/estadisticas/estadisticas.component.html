@@ -66,6 +66,7 @@
 <div class="card">
     <header class="card-header">
         <p class="card-header-title">
+            <span *ngIf="noHuboReporteAyer(promotora.nombre, promotora.apellido)" class="punto-rojo"></span> 
             {{promotora.nombre}} {{promotora.apellido}} ({{getPuntos(promotora.nombre, promotora.apellido) || 0}}
             puntos -
             {{obtenerIncentivo(puntos(getPuntos(promotora.nombre, promotora.apellido)),

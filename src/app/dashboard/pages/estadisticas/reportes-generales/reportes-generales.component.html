@@ -1,0 +1,29 @@
+<div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
+    <div class="card-content">
+        <app-title title="Estadísticas" />
+        <span class="subtitle" style="color: white;">Gráficas</span>
+    </div>
+</div>
+<hr>
+
+<div class="tabs">
+    <ul>
+        <li [ngClass]="{'is-active':graficas}" (click)="graficas = !graficas">
+            <a>Gráficas</a>
+        </li>
+        <li [ngClass]="{'is-active':!graficas}" (click)="graficas = !graficas">
+            <a>Listas</a>
+        </li>
+    </ul>
+</div>
+
+<br>
+@if(graficas){
+
+<app-graficas />
+
+} @else {
+
+<app-listas></app-listas>
+
+}

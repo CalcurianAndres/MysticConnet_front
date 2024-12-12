@@ -23,7 +23,7 @@ export class ProductosResponseService {
 
   public productos = computed(() => this.#state().productos);
   public loading = computed(() => this.#state().loading);
-  public ruta = 'http://localhost:8080/api'
+  public ruta = 'https://mysticconnectserver-production.up.railway.app/api'
 
 
 
