@@ -1,6 +1,3 @@
-<app-planificacion [active]="active" (onCloseModal)="active = false">
-
-</app-planificacion>
 <div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
     <div class="card-content">
         <app-title title="Estadísticas" />
@@ -10,7 +7,7 @@
 
 <div class="field is-grouped">
     <div class="control">
-        <button class=" button is-primary" (click)="active = true">
+        <button class=" button is-primary" [routerLink]="['/dashboard/planificacion']">
             <span>Nueva planificación</span>
         </button>
     </div>

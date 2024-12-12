@@ -33,6 +33,11 @@ export const routes: Routes = [
                 loadComponent: () => import('./dashboard/pages/estadisticas/reportes-generales/reportes-generales.component')
             },
             {
+                path: 'planificacion',
+                title: 'Planificación',
+                loadComponent: () => import('./dashboard/pages/estadisticas/planificacion/planificacion.component')
+            },
+            {
                 path: '',
                 redirectTo: 'reportes',
                 pathMatch: 'full'

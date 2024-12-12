@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { planificacion, ReporteAgrupado, reportes, ReporteSimplificado } from '@interfaces/req-respons';
 import { ReportesResponseService } from '@services/reportes-response.service';
 import { TitleComponent } from '@shared/title/title.component';
-import { PlanificacionComponent } from './planificacion/planificacion.component';
 import { UserResponseService } from '@services/user-response.service';
 import { PlanificacionService } from '@services/planificacion.service';
 import { LoadingsComponent } from '@shared/loadings/loadings.component';
@@ -12,7 +11,7 @@ import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-estadisticas',
-  imports: [TitleComponent, CommonModule, FormsModule, PlanificacionComponent, LoadingsComponent, RouterModule],
+  imports: [TitleComponent, CommonModule, FormsModule, LoadingsComponent, RouterModule],
   templateUrl: './estadisticas.component.html',
   styleUrl: './estadisticas.component.scss'
 })
