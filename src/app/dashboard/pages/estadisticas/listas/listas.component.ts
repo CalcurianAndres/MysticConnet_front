@@ -32,7 +32,7 @@ export class ListasComponent {
 
 
   constructor() {
-    this.ReportesServices.getReportesAgrupados().subscribe({
+    this.ReportesServices.getReportesAgrupados_(true).subscribe({
       next: (reportes) => {
         this.reportesAgrupados = reportes;
         this.reportesAgrupadosOrdenados = [...this.reportesAgrupados];
@@ -62,6 +62,7 @@ export class ListasComponent {
 
   obtenerIncentivo(puntos: number, incentivos: any) {
     // Si los puntos son menores que el mínimo del primer rango
+    console.log(incentivos)
     if (puntos < incentivos[0].de) {
       return 0;  // No hay incentivo
     }
@@ -171,6 +172,36 @@ export class ListasComponent {
     this.ventasPorZona = Object.values(zonaMap).sort(
       (a, b) => b.totalProductos - a.totalProductos
     );
+  }
+
+
+  getTotal(key: keyof ReporteAgrupado): number {
+    return this.reportesAgrupadosOrdenados.reduce((sum, item) => sum + (Number(item[key]) || 0), 0);
+  }
+
+
+  CambiarAfijas(fijas: any) {
+    if (fijas.value === 'Fijas') {
+      this.ReportesServices.getReportesAgrupados_(true).subscribe({
+        next: (reportes) => {
+          this.reportesAgrupados = reportes;
+          this.reportesAgrupadosOrdenados = [...this.reportesAgrupados];
+        },
+        error: (error) => {
+          console.error('Error al cargar los reportes:', error);
+        }
+      });
+    } else {
+      this.ReportesServices.getReportesAgrupados_(false).subscribe({
+        next: (reportes) => {
+          this.reportesAgrupados = reportes;
+          this.reportesAgrupadosOrdenados = [...this.reportesAgrupados];
+        },
+        error: (error) => {
+          console.error('Error al cargar los reportes:', error);
+        }
+      });
+    }
   }
 
 }

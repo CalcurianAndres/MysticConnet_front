@@ -40,6 +40,83 @@ export class ReportesResponseService {
       });
   }
 
+  getReportesAgrupados_(tipoPromotora: boolean): Observable<ReporteAgrupado[]> {
+    return this.http.get<reportesResponse[]>(`${this.ruta}/reportes`).pipe(
+      map((reportes) => {
+        const agrupados = reportes
+          .filter(reporte => reporte.promotora.fija === tipoPromotora)  // Filtrar por tipo de promotora
+          .reduce((result, reporte) => {
+            const promotoraId = reporte.promotora?._id;
+            if (!promotoraId) {
+              console.warn('Reporte sin promotora válida:', reporte);
+              return result;
+            }
+
+            if (!result[promotoraId]) {
+              result[promotoraId] = {
+                promotora: `${reporte.promotora.nombre} ${reporte.promotora.apellido}`,
+                puntosAcumulados: 0,
+                totalGastado: 0,
+                productosVendidos: 0,
+                conteoMetaUnidades: 0, // Agregamos este contador
+                reportes: [],
+              } as ReporteAgrupado;
+            }
+
+            // Calcular los puntos totales, el precio total y la cantidad de productos de cada reporte
+            const puntosReporte = reporte.productos.reduce(
+              (suma, prod) => suma + prod.producto.puntos * prod.cantidad,
+              0
+            );
+
+            const precioReporte = reporte.productos.reduce(
+              (suma, prod) => suma + prod.producto.precio * prod.cantidad,
+              0
+            );
+
+            const cantidadProductos = reporte.productos.reduce(
+              (suma, prod) => suma + prod.cantidad,
+              0
+            );
+
+            // Verificar si la promotora alcanzó la meta de 30 unidades en este reporte
+            if (cantidadProductos >= 30) {
+              result[promotoraId].conteoMetaUnidades += 1;
+            }
+
+            // Acumulamos los puntos, el total gastado y la cantidad de productos para la promotora
+            result[promotoraId].puntosAcumulados += puntosReporte;
+            result[promotoraId].totalGastado += precioReporte;
+            result[promotoraId].productosVendidos += cantidadProductos;
+
+            // Agregar el reporte a la lista de reportes de la promotora
+            result[promotoraId].reportes.push({
+              cliente: reporte.cliente.cliente,
+              marca: reporte.cliente.marca,
+              tipo: reporte.tipo,
+              observacion: reporte.observacion,
+              productos: reporte.productos.map((prod) => ({
+                producto: prod.producto.producto,
+                linea: prod.producto.linea,
+                marca: prod.producto.marca,
+                cantidad: prod.cantidad,
+                subtotal: prod.producto.precio * prod.cantidad,
+                puntosTotales: prod.producto.puntos * prod.cantidad,
+              })),
+              fecha: reporte.fecha,
+              totalPuntos: puntosReporte,
+              totalSubtotal: precioReporte,
+            });
+
+            return result;
+          }, {} as Record<string, ReporteAgrupado>);
+
+        // Convertir el objeto de reportes agrupados en un arreglo para devolverlo y ordenarlo
+        return Object.values(agrupados).sort((a, b) => b.productosVendidos - a.productosVendidos);
+      })
+    );
+  }
+
   getReportesAgrupados(): Observable<ReporteAgrupado[]> {
     return this.http.get<reportesResponse[]>(`${this.ruta}/reportes`).pipe(
       map((reportes) => {

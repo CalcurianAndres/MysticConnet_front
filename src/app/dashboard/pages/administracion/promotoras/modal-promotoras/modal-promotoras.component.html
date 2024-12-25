@@ -41,23 +41,26 @@
                         <select [(ngModel)]="data.role">
                             <option value="Admin">Administrador</option>
                             <option value="Promotora">Promotora</option>
+                            <option value="coordinadora">Coordinadora</option>
                         </select>
                     </div>
                 </div>
             </div>
 
-            @if(data.nombre && data.apellido && data.telefono && data.correo && data.region && data.sueldo && data.role && !Edicion){
-                <button class="button is-primary" (click)="nuevaPromotora()">
-                    <span class="icon"></span>
-                    <span>Registrar</span>
-                </button>
-            }@else if (data.nombre && data.apellido && data.telefono && data.correo && data.region && data.sueldo && data.role && Edicion) {
-                <button class="button is-primary" (click)="EditarPromotora()">
-                    <span class="icon"></span>
-                    <span>Editar</span>
-                </button>
+            @if(data.nombre && data.apellido && data.telefono && data.correo && data.region && data.sueldo && data.role
+            && !Edicion){
+            <button class="button is-primary" (click)="nuevaPromotora()">
+                <span class="icon"></span>
+                <span>Registrar</span>
+            </button>
+            }@else if (data.nombre && data.apellido && data.telefono && data.correo && data.region && data.sueldo &&
+            data.role && Edicion) {
+            <button class="button is-primary" (click)="EditarPromotora()">
+                <span class="icon"></span>
+                <span>Editar</span>
+            </button>
             }
-            
+
         </div>
     </div>
 </div>

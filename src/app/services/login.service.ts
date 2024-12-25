@@ -23,6 +23,7 @@ export class LoginService {
   private http = inject(HttpClient)
   private router = inject(Router)
   public ruta = 'https://mysticconnectserver-production.up.railway.app/api'
+  // public ruta = 'http://localhost:8080/api'
 
   public usuario!: promotoras
 
@@ -104,6 +105,11 @@ export class LoginService {
       localStorage.removeItem('SESSION_EMAIL');
       localStorage.removeItem('SESSION_USER_NAME');
     }
+  }
+
+
+  CambiarPassword(data: any) {
+    return this.http.post(`${this.ruta}/login/change-password`, data)
   }
 
 }

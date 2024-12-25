@@ -21,7 +21,7 @@ export default class EstadisticasComponent {
   public promotoras = inject(UserResponseService);
   public planificacionService = inject(PlanificacionService)
   public active: boolean = false;
-  indexPlanificacion: any = null
+  indexPlanificacion: any = 0
 
 
   reportesAgrupados: ReporteAgrupado[] = []; // Lista para almacenar los datos
@@ -67,6 +67,15 @@ export default class EstadisticasComponent {
   getPuntos(nombre: string, apellido: string): number {
     const reporte = this.reportesAgrupados.find(r => r.promotora === `${nombre} ${apellido}`);
     return reporte ? reporte.puntosAcumulados : 0;
+  }
+
+  buscarDiasTrabajados(nombre: string, apellido: string): number {
+    const reporte = this.reportesAgrupados.find(r => r.promotora === `${nombre} ${apellido}`);
+    return reporte ? reporte.reportes.length : 0;
+  }
+
+  sueldodiario(sueldo: any, diasTrabajados: number) {
+    return Number(sueldo) / diasTrabajados;
   }
 
   // Función para obtener los gastos acumulados por una promotora

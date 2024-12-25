@@ -1,23 +1,101 @@
-.cuerpo{
-    position: absolute;
-    display: block;
+/* Fondo principal para escritorio */
+.contenedor {
+    position: relative;
     width: 100%;
-    height: 100%;
-    background-color: rgb(48, 45, 64);
+    height: 100vh;
+    /* Altura completa del viewport */
+    background-image: url("../../assets/ESCRITORIO APP@2x.jpg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
-.cuerpo img {
-    width: 250px; /* Ajusta el tamaño de la imagen */
-    height: auto; /* Mantiene la proporción */
-    display: block;
-    margin: 20px auto 0; /* 20px de margen superior, centrada horizontalmente */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra difusa */
-    border-radius: 50%; /* Borde redondeado, ajusta según prefieras */
-  }
-  
-.form{
-    width: 250px;
+/* Película semitransparente */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    /* Fondo oscuro con 60% de transparencia */
+    z-index: 1;
+}
+
+/* Contenido centrado */
+.contenido {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    color: white;
+    text-align: center;
+    padding: 20px;
+    width: 90%;
+    /* Ajuste para dispositivos pequeños */
+    max-width: 400px;
+    /* Máximo ancho en pantallas grandes */
+}
+
+/* Logo */
+.logo {
+    width: 150px;
     height: auto;
-    display: block;
-    margin: 20px auto 0;
+    margin-bottom: 20px;
+    border-radius: 50%;
+    /* Opcional */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Formularios */
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.input {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.button {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.button.is-primary {
+    background-color: #3273dc;
+    color: white;
+}
+
+.button.is-primary:hover {
+    background-color: #275dad;
+}
+
+label {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+}
+
+#recuerdame {
+    margin-right: 5px;
+}
+
+/* Cambiar fondo para dispositivos móviles */
+@media (max-width: 768px) {
+    .contenedor {
+        background-image: url("../../assets/TELEFONO APP@2x.jpg");
+        background-size: cover;
+        background-position: center;
+    }
 }

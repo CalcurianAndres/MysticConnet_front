@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { arrayProductos, productos, reportes } from '@interfaces/req-respons';
 import { ClientesResponseService } from '@services/clientes-response.service';
 import { LoginService } from '@services/login.service';
+import { PlanificacionService } from '@services/planificacion.service';
 import { ProductosResponseService } from '@services/productos-response.service';
 import { ReportesResponseService } from '@services/reportes-response.service';
 import Swal from 'sweetalert2';
@@ -20,12 +21,13 @@ export default class ReporteComponent {
   public ProductosServices = inject(ProductosResponseService);
   public ReportesServices = inject(ReportesResponseService)
   public loginSevice = inject(LoginService)
+  public planificacion = inject(PlanificacionService)
 
   public searchTerm: string = ''; // Término de búsqueda
   public filteredProductos: productos[] = []; // Productos filtrados
   public Informacion = signal(true)//con esto se muestra la información del despacho
   public isRotated = signal(false);
-  public ProductosSelected: { producto: productos, cantidad: number }[] = [];
+  public ProductosSelected: { producto: productos, inicial: number, final: number }[] = [];
 
   public establecimiento: string = '';
   public tipo: string = '';
@@ -45,11 +47,20 @@ export default class ReporteComponent {
       observacion: '',
       fecha: this.date_log
     }
+  public date_aja!: Date
 
   public marca_seleccionada = ''
+  public cliente = ''
 
   constructor() {
     this.date_log = this.getFormattedDate()
+    this.date_aja = new Date();
+    // setTimeout(() => {
+    //   if (this.planification(this.date_aja, this.loginSevice.usuario.nombre).cliente) {
+    //     this.establecimiento = this.planification(this.date_aja, this.loginSevice.usuario.nombre).cliente
+    //     console.log(this.establecimiento)
+    //   }
+    // }, 1000);
   }
 
   // Método para filtrar los productos según el nombre
@@ -114,17 +125,21 @@ export default class ReporteComponent {
 
     // Solo agregar el producto si no existe en ProductosSelected
     if (!productoExistente) {
-      this.ProductosSelected.push({ producto: productoDB, cantidad: 0 });
+      this.ProductosSelected.push({ producto: productoDB, inicial: 0, final: 0 });
     }
   }
 
 
   VerificarReporte() {
-    return this.ProductosSelected.every(p => p.cantidad > 0)
+    return this.ProductosSelected.every(p => p.inicial > 0 && (p.final > 0 && p.final < p.inicial))
   }
 
   eliminarDeProductosSelected(index: number) {
     this.ProductosSelected.splice(index, 1)
+  }
+
+  resta = (x: number, y: number) => {
+    return x - y;
   }
 
   Reportar() {
@@ -154,7 +169,9 @@ export default class ReporteComponent {
         this.data.evento = this.tipo_evento;
         this.data.productos = this.ProductosSelected.map(selected => ({
           producto: selected.producto._id,
-          cantidad: selected.cantidad
+          inicio: selected.inicial,
+          final: selected.final,
+          cantidad: this.resta(selected.inicial, selected.final)
         }));
         this.data.observacion = this.obervacion;
 
@@ -245,6 +262,23 @@ export default class ReporteComponent {
 
   verFormato(e: any) {
     console.log(e.value)
+  }
+
+  planification(fecha: any, promotora: string) {
+    let fecha_f = new Date(fecha);
+    const fechaUTC = new Date(fecha_f.getTime() + (0 * 60 * 60 * 1000));
+    const fechaConvertida = fechaUTC.toISOString();
+
+    // Aumentar un día
+    fechaUTC.setUTCDate(fecha.getUTCDate() + 1);
+
+    // Ajustar la hora a medianoche en UTC
+    fechaUTC.setUTCHours(0, 0, 0, 0);
+    const fechaConvertida_ = fechaUTC.toISOString();
+
+
+    console.log(this.planificacion.planificacion()[this.planificacion.planificacion().length - 1].planificacion, '<=>', fechaConvertida_)
+    return this.planificacion.planificacion()[this.planificacion.planificacion().length - 1].planificacion.find((p: any) => p.fecha === fechaConvertida_ && p.promotora === promotora)
   }
 
 

@@ -1,3 +1,5 @@
+<app-new-planificacion [newPlanificacion]="newPlanificacion" (onCloseModal)="cerrar_()" [plan]="plan"
+    (onAgregarPlanificacion)="addplanificacion()" />
 <div class="banner">
     @if(servicePlanificacion.loading()){
     <app-loadings></app-loadings>
@@ -150,47 +152,53 @@
     </ul>
 </div>
 
+
 <table class="table is-fullwidth is-striped">
+    @for(empleada of promotoras.users(); track $index;let a = $index){
     <thead>
         <tr>
-            <th>Promotora</th>
+            <th>{{empleada.nombre}} {{empleada.apellido}}</th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
             <th></th>
         </tr>
     </thead>
     <tbody>
-        @for(empleada of promotoras.users(); track $index){
         <tr>
-            <td>{{empleada.nombre}} {{empleada.apellido}}</td>
             @if(semana_selected !== undefined){
+            @for(dia of semanas[semana_selected]; track $index; let k = $index){
             <td>
-                <!-- Iteramos sobre los días de la semana seleccionada -->
-                @for(dia of semanas[semana_selected]; track $index; let k = $index){
-                <div class="field is-grouped">
-                    <div class="control">
-                        <label for="" class="label">{{ dia.dia }}: {{ dia.fecha | date: 'dd/MM/yyyy' }}</label>
-                        <div class="select">
-                            <select>
-                                @for(cliente of clientes.clientes();track $index){
-                                <option value="">{{cliente.cliente}} ({{cliente.marca}})</option>
-                                } @empty {
-                                cargando...
-                                }
-                            </select>
-                        </div>
+                {{ dia.dia }}: {{ dia.fecha | date: 'dd/MM/yyyy' }}
+                @if(!existe(dia.fecha, empleada.nombre) ){
+                <button class="button is-primary" (click)="generarPlan(empleada.nombre, dia.fecha)">
+                    <span>Asignar Cliente</span>
+                </button>
+                } @else {
+                <div class="asignado">
+                    Asignado
+                    <div class="popup">
+                        <b>Tipo: </b>{{planification(dia.fecha, empleada.nombre ).tipo}} <br>
+                        <b>Cliente: </b>{{planification(dia.fecha, empleada.nombre ).cliente_nombre}}
                     </div>
                 </div>
                 }
             </td>
             }
+            }
         </tr>
-        }
     </tbody>
+    }
 </table>
-<button class="button is-success" (click)="crearPlanificacion()">
-    <span>Crear Planificación</span>
-</button>
 <br>
 }@else {
 <br>
 Aun no hay planificación semanal
 }
+
+<br>
+<button class="button is-success" (click)=" crearPlanificacion()">
+    <span>Guardar</span>
+</button>

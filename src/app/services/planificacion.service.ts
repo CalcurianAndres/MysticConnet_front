@@ -38,6 +38,8 @@ export class PlanificacionService {
           loading: false,
           planificacion: res
         });
+
+        console.log(res)
       });
   }
 
@@ -51,6 +53,7 @@ export class PlanificacionService {
 
     // Enviar la solicitud al servidor
     this.http.post<planificacion>(`${this.ruta}/planificacion`, data).subscribe((res) => {
+      console.log(data)
       // Actualizar el estado agregando el nuevo producto
       this.#state.set({
         ...this.#state(),

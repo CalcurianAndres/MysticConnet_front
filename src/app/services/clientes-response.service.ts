@@ -49,6 +49,11 @@ export class ClientesResponseService {
     return this.clientes().filter(cliente => cliente.marca === marca)
   }
 
+  clienteBuscarPorId(id: string) {
+    return this.clientes().find(cliente => cliente._id === id)
+
+  }
+
   NuevoCliente = async (data: clientes) => {
     // Cambiar el estado a "cargando"
     this.#state.set({

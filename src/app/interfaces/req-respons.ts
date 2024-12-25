@@ -5,7 +5,7 @@ export interface promotoras {
     region: string;
     telefono: string;
     sueldo: string;
-    role: 'Admin' | 'Promotora';
+    role: 'Admin' | 'Promotora' | 'coordinadora';
     restringido: boolean;
     fija: boolean;
     estado?: 'habilitada' | 'inhabilitada';
@@ -52,6 +52,8 @@ export interface reportesResponse {
 
 export interface arrayProductosPopulated {
     producto: productos;
+    inicio: number;
+    final: number;
     cantidad: number;
 }
 
@@ -70,7 +72,9 @@ export interface reportes {
 }
 export interface arrayProductos {
     producto: productos['_id'];
-    cantidad: number;
+    inicio: number;
+    final: number;
+    cantidad: number
 }
 
 export interface ReporteAgrupado {
@@ -102,23 +106,6 @@ export interface ProductoSimplificado {
     puntosTotales: number; // Subtotal calculado (precio * cantidad)
 }
 
-export interface planificacion {
-    mes: string;
-    inicio: string;
-    cierre: string;
-    metas: {
-        tradicional: {
-            mystic: metas,
-            qerametik: metas
-        },
-        rebranding: {
-            mystic: metas,
-            qerametik: metas
-        }
-    },
-    incentivos: incentivos_[]
-}
-
 export interface metas {
     impulso: number;
     evento: number;
@@ -128,4 +115,34 @@ export interface incentivos_ {
     de: number,
     hasta: number,
     incentivo: number
+}
+
+export interface planificacion {
+    mes: string, // Valor seleccionado en el dropdown de meses
+    inicio: string, // Fecha de inicio seleccionada
+    cierre: string, // Fecha de cierre seleccionada
+    metas: {
+        tradicional: {
+            mystic: {
+                impulso: number, // Impulso diario de Mystic (Promotoras fijas)
+                evento: number   // Evento de Mystic (Promotoras fijas)
+            },
+            qerametik: {
+                impulso: number, // Impulso diario de Qerametik (Promotoras fijas)
+                evento: number   // Evento de Qerametik (Promotoras fijas)
+            }
+        },
+        rebranding: {
+            mystic: {
+                impulso: number, // Impulso diario de Mystic (Promotoras por destajo)
+                evento: number   // Evento de Mystic (Promotoras por destajo)
+            },
+            qerametik: {
+                impulso: number, // Impulso diario de Qerametik (Promotoras por destajo)
+                evento: number   // Evento de Qerametik (Promotoras por destajo)
+            }
+        }
+    },
+    incentivos: incentivos_[],
+    planificacion: any // Planificación semanal (por promotora y cliente)
 }

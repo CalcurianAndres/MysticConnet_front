@@ -1,0 +1,42 @@
+.asignado {
+    position: relative;
+    /* Necesario para posicionar el popup */
+    text-decoration: underline dotted;
+    /* Subrayado con puntos */
+    cursor: pointer;
+    /* Cambia el cursor para indicar que es interactivo */
+}
+
+.asignado:hover .popup {
+    display: block;
+    /* Muestra el popup al hacer hover */
+}
+
+.popup {
+    display: none;
+    /* Oculta el popup por defecto */
+    position: absolute;
+    /* Ubicación relativa al contenedor */
+    top: 100%;
+    /* Justo debajo del texto subrayado */
+    left: 50%;
+    /* Centra horizontalmente el popup */
+    transform: translateX(-50%);
+    /* Ajusta la posición centrada */
+    background-color: #fff;
+    /* Fondo blanco para el popup */
+    color: #333;
+    /* Color del texto */
+    padding: 10px;
+    /* Espaciado interno */
+    border: 1px solid #ccc;
+    /* Borde del popup */
+    border-radius: 5px;
+    /* Bordes redondeados */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    /* Sombra para el popup */
+    z-index: 100;
+    /* Asegura que esté sobre otros elementos */
+    white-space: nowrap;
+    /* Evita que el texto se divida en líneas */
+}

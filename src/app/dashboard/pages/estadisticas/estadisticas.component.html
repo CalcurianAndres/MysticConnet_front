@@ -3,6 +3,8 @@
         <app-title title="Estadísticas" />
     </div>
 </div>
+
+
 <hr>
 
 <div class="field is-grouped">
@@ -67,7 +69,8 @@
             {{promotora.nombre}} {{promotora.apellido}} ({{getPuntos(promotora.nombre, promotora.apellido) || 0}}
             puntos -
             {{obtenerIncentivo(puntos(getPuntos(promotora.nombre, promotora.apellido)),
-            planificacionService.planificacion()[indexPlanificacion].incentivos) | currency:'USD'}} Incentivo)
+            planificacionService.planificacion()[indexPlanificacion].incentivos) | currency:'USD'}} Incentivo) -
+            {{buscarDiasTrabajados(promotora.nombre, promotora.apellido) | number}} dia(s) trabajado(s)
         </p>
         <button class="card-header-icon" aria-label="more options" (click)="togglePromotoraSection(i)">
             <span class="icon" [ngClass]="{'rotado': isRotated[i]}">
@@ -82,11 +85,12 @@
                 <th>Vendido</th>
                 <th>Sueldo</th>
                 <th>Incentivo</th>
-                <th>% Gasto</th>
+                <th>Incidencia</th>
             </tr>
             <tr>
                 <td>{{ getGastado(promotora.nombre, promotora.apellido) || 0 | currency:'USD' }}</td>
-                <td>{{promotora.sueldo | currency:'USD'}}</td>
+                <td>{{sueldodiario(promotora.sueldo, buscarDiasTrabajados(promotora.nombre, promotora.apellido)) |
+                    currency:'USD'}}</td>
                 <td>{{obtenerIncentivo(puntos(getPuntos(promotora.nombre, promotora.apellido)),
                     planificacionService.planificacion()[indexPlanificacion].incentivos) | currency:'USD'}}
                 </td>
@@ -103,7 +107,7 @@
                 </td>
             </tr>
         </table>
-        @if(indexPlanificacion){
+        @if(indexPlanificacion === 0){
         @for(fecha of getFechasDelRango(); track $index; let j = $index){
         <div>
             <div class="card">
@@ -249,6 +253,7 @@
         <br>
         }
         } @else {
+        {{indexPlanificacion}}
         <app-loadings></app-loadings>
         }
     </div>

@@ -1,7 +1,38 @@
+<div class="modal" [ngClass]="{'is-active':CambioPass}">
+  <div class="modal-background"></div>
+  <div class="modal-card">
+    <header class="modal-card-head">
+      <p class="modal-card-title">Cambiar contraseña</p>
+      <button class="delete" aria-label="close" (click)="CambioPass = false"></button>
+    </header>
+    <div class="modal-card-body">
+      <div class="field">
+        <div class="control">
+          <label for="" class="label">Contraseña</label>
+          <input type="password" class="input" [(ngModel)]="pass1">
+        </div>
+      </div>
+      <div class="field">
+        <div class="control">
+          <label for="" class="label">Repetir contraseña</label>
+          <input type="password" class="input" [(ngModel)]="pass2">
+        </div>
+      </div>
+      <div class="field" *ngIf="ComparePass()">
+        <div class="control"> </div>
+        <button class="button is-success" (click)="enviarContrasena()">
+          <span class="icon"><i class="fas fa-save"></i></span>
+          <span>Guardar</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <nav class="navbar is-primary" role="navigation" aria-label="main navigation">
   <div class="navbar-brand">
     <a class="navbar-item" href="/">
-      <img src="../../../assets/logo.jpg" alt="MysticConnet" style="border-radius: 500;">
+      <img src="../../../assets/logo.png" alt="MysticConnet" style="border-radius: 500;">
     </a>
 
 
@@ -13,6 +44,7 @@
     </a>
   </div>
   <div class="navbar-menu">
+    @if(LoginService.usuario.role != 'Promotora'){
     <div class="navbar-item has-dropdown is-hoverable">
       <a class="navbar-link">
         Menú
@@ -22,14 +54,22 @@
         <a class="navbar-item" routerLink="administracion">
           Administración
         </a>
+        @if(LoginService.usuario.role != 'coordinadora'){
         <a class="navbar-item" routerLink="estadisticas">
           Estadísticas
         </a>
+        }
+        @if(LoginService.usuario.role === 'coordinadora'){
+        <a class="navbar-item" routerLink="planificacion">
+          Planificación
+        </a>
+        }
         <a class="navbar-item" routerLink="reportes">
           Reportar
         </a>
       </div>
     </div>
+    }
 
     <div class="navbar-end">
 
@@ -39,6 +79,9 @@
         </a>
 
         <div class="navbar-dropdown">
+          <a class="navbar-item" (click)="CambioPass = true">
+            Cambiar contraseña
+          </a>
           <a class="navbar-item" (click)="logout()">
             Cerrar sesión
           </a>
@@ -53,6 +96,9 @@
   </div>
 
   <div class="navbar-menu is-active" id="navMenu" *ngIf="mobile">
+    <a class="navbar-item" (click)="CambioPass = true">
+      Cambiar contraseña
+    </a>
     <a class="navbar-item" (click)="logout()">
       Cerrar sesión
     </a>

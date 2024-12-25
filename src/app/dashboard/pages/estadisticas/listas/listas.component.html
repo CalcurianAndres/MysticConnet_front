@@ -1,5 +1,11 @@
 <span class="title">Promotoras</span>
 <hr>
+<div class="select">
+    <select (change)="CambiarAfijas($event.target)">
+        <option value="Fijas">Fijas</option>
+        <option value="NoFijas">Por destajos</option>
+    </select>
+</div>
 <table class="table is-fullwidth is-striped">
     <thead>
         <tr>
@@ -57,6 +63,17 @@
 
         }
     </tbody>
+    <tfoot>
+        <tr>
+            <td>Total</td>
+            <td>{{ getTotal('conteoMetaUnidades') }}</td>
+            <td>{{ getTotal('productosVendidos') }}</td>
+            <td>{{ getTotal('puntosAcumulados') }}</td>
+            <td>-</td>
+            <td>{{ getTotal('totalGastado') | currency:'USD' }}</td>
+            <!-- Agrega más celdas si es necesario -->
+        </tr>
+    </tfoot>
 </table>
 
 <span class="title">Clientes</span>

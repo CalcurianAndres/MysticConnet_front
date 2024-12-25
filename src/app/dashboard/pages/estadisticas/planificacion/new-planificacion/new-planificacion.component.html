@@ -1,0 +1,50 @@
+<div class="modal" [ngClass]="{'is-active':newPlanificacion}">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Planificación {{plan.promotora}} {{plan.fecha | date:'dd/MM/yyyy'}}</p>
+            <button class="delete" aria-label="close" (click)="cerrar()"></button>
+        </header>
+        <div class="modal-card-body">
+            <div class="field">
+                <div class="control">
+                    <label class="label">Tipo</label>
+                    <div class="select">
+                        <select [(ngModel)]="plan.tipo">
+                            <option value="Evento">Evento</option>
+                            <option value="Impulso">Impulso</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    <label for="" class="label">Cliente</label>
+                    <div class="select">
+                        <select [(ngModel)]="qlo" (change)="addCliente($event.target)">
+                            @for(cliente of Clientes.clientes(); track $index){
+                            <option value="{{cliente._id}}__{{cliente.cliente}}({{cliente.marca}})"
+                                (click)="plan.cliente_nombre = cliente.cliente">
+                                {{cliente.cliente}} ({{cliente.marca}})</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-grouped">
+                <div class="control">
+                    <label for="" class="label">Ejec. de venta</label>
+                    <input type="text" class="input" [(ngModel)]="plan.ejecutivo">
+                </div>
+                <div class="control" style="width: 360px;" [(ngModel)]="plan.observacion">
+                    <textarea class="textarea" rows="2" placeholder="Escribe una observación"></textarea>
+                </div>
+            </div>
+            @if (plan.cliente && plan.ejecutivo) {
+            <button class="button is-primary" (click)="onAgregarPlanificacion.emit()">
+                <span>Listo</span>
+            </button>
+            }
+        </div>
+    </div>
+</div>

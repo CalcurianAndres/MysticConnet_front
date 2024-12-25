@@ -9,8 +9,9 @@
             <span class="subtitle" style="color: rgb(212, 212, 212);">
                 <div class="field is-grouped">
                     <div class="control">
+                        <!-- [disabled]="loginSevice.usuario.restringido" -->
                         <input type="date" class="input" [value]="date_log" [max]="date_log"
-                            (change)="verFormato($event.target)" [disabled]="loginSevice.usuario.restringido">
+                            (change)="verFormato($event.target)">
                     </div>
                 </div>
             </span>
@@ -157,7 +158,8 @@
                     <tr>
                         <th></th>
                         <th>Producto</th>
-                        <th>Vendido</th>
+                        <th>Alm. Inicial</th>
+                        <th>Alm. Final</th>
                     </tr>
                 </thead>
                 }
@@ -172,8 +174,12 @@
                         </td>
                         <td>{{productoAgregado.producto.marca}} - {{productoAgregado.producto.producto}}
                             ({{productoAgregado.producto.linea}})</td>
-                        <td style="width: 30px"><input type="number" class="input" placeholde="Cantidad vendida"
-                                [(ngModel)]="productoAgregado.cantidad"></td>
+                        <td style="width: 100px"><input type="number" class="input" placeholde="Cantidad vendida"
+                                [(ngModel)]="productoAgregado.inicial"></td>
+                        <td style="width: 100px">
+                            <input type="number" class="input" placeholde="Cantidad vendida"
+                                [(ngModel)]="productoAgregado.final">
+                        </td>
                     </tr>
                     } @empty {
                     <div class="notification is-primary is-light">
