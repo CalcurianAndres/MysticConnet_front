@@ -131,7 +131,7 @@ export default class ReporteComponent {
 
 
   VerificarReporte() {
-    return this.ProductosSelected.every(p => p.inicial > 0 && (p.final > 0 && p.final < p.inicial))
+    return this.ProductosSelected.every(p => p.inicial > 0 && (p.final > 0 && p.final <= p.inicial))
   }
 
   eliminarDeProductosSelected(index: number) {
