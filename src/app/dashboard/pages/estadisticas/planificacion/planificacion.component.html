@@ -100,38 +100,85 @@
     </span>
     <br><br>
 
-    @for(metas_ of [].constructor(metas); track $index; let i = $index){
-    <div class="field is-grouped">
-        <div class="control">
-            <label for="" class="label">de (puntos)</label>
-            <input type="number" name="" id="" class="input" [(ngModel)]="data.incentivos[i].de">
+    <div class="columns">
+        <div class="column">
+            <span class="title">Incentivos Mystic</span>
+            @for(metas_ of [].constructor(metas); track $index; let i = $index){
+            <div class="field is-grouped">
+                <div class="control">
+                    <label for="" class="label">de (puntos)</label>
+                    <input type="number" name="" id="" class="input" style="width: 100px;"
+                        [(ngModel)]="data.incentivos[i].de">
+                </div>
+                <div class="control">
+                    <label for="" class="label">hasta (puntos)</label>
+                    <input type="number" name="" id="" class="input" style="width: 100px;"
+                        [(ngModel)]="data.incentivos[i].hasta">
+                </div>
+                <div class="control">
+                    <label for="" class="label">Incentivo (USD)</label>
+                    <input type="number" name="" id="" class="input" style="width: 100px;"
+                        [(ngModel)]="data.incentivos[i].incentivo">
+                </div>
+                @if(i === metas - 1){
+                <div class="control">
+                    <label for="" class="label"> </label>
+                    <button class="button is-success" (click)="addMeta()">
+                        <span class="icon"><i class="fas fa-plus"></i></span>
+                    </button>
+                </div>
+                @if(i > 0){
+                <div class="control">
+                    <label for="" class="label"> </label>
+                    <button class="button is-danger" (click)="removeMeta(i)">
+                        <span class="icon"><i class="fas fa-minus"></i></span>
+                    </button>
+                </div>
+                }
+                }
+            </div>
+            }
         </div>
-        <div class="control">
-            <label for="" class="label">hasta (puntos)</label>
-            <input type="number" name="" id="" class="input" [(ngModel)]="data.incentivos[i].hasta">
+        <div class="column">
+            <span class="title">Incentivos Qerametik</span>
+            @for(metas__ of [].constructor(metas_); track $index; let i = $index){
+            <div class="field is-grouped">
+                <div class="control">
+                    <label for="" class="label">de (puntos)</label>
+                    <input type="number" name="" id="" class="input" style="width: 100px;"
+                        [(ngModel)]="data.incentivos_qerametik[i].de">
+                </div>
+                <div class="control">
+                    <label for="" class="label">hasta (puntos)</label>
+                    <input type="number" name="" id="" class="input" style="width: 100px;"
+                        [(ngModel)]="data.incentivos_qerametik[i].hasta">
+                </div>
+                <div class="control">
+                    <label for="" class="label">Incentivo (USD)</label>
+                    <input type="number" name="" id="" class="input" style="width: 100px;"
+                        [(ngModel)]="data.incentivos_qerametik[i].incentivo">
+                </div>
+                @if(i === metas_ - 1){
+                <div class="control">
+                    <label for="" class="label"> </label>
+                    <button class="button is-success" (click)="addMeta_()">
+                        <span class="icon"><i class="fas fa-plus"></i></span>
+                    </button>
+                </div>
+                @if(i > 0){
+                <div class="control">
+                    <label for="" class="label"> </label>
+                    <button class="button is-danger" (click)="removeMeta_(i)">
+                        <span class="icon"><i class="fas fa-minus"></i></span>
+                    </button>
+                </div>
+                }
+                }
+            </div>
+            }
         </div>
-        <div class="control">
-            <label for="" class="label">Incentivo (USD)</label>
-            <input type="number" name="" id="" class="input" [(ngModel)]="data.incentivos[i].incentivo">
-        </div>
-        @if(i === metas - 1){
-        <div class="control">
-            <label for="" class="label"> </label>
-            <button class="button is-success" (click)="addMeta()">
-                <span class="icon"><i class="fas fa-plus"></i></span>
-            </button>
-        </div>
-        @if(i > 0){
-        <div class="control">
-            <label for="" class="label"> </label>
-            <button class="button is-danger" (click)="removeMeta(i)">
-                <span class="icon"><i class="fas fa-minus"></i></span>
-            </button>
-        </div>
-        }
-        }
     </div>
-    }
+
 
     <br>
     }

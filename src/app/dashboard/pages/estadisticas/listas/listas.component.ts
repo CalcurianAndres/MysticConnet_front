@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { ReporteAgrupado } from '@interfaces/req-respons';
 import { PlanificacionService } from '@services/planificacion.service';
 import { ReportesResponseService } from '@services/reportes-response.service';
@@ -7,7 +8,7 @@ import { UserResponseService } from '@services/user-response.service';
 
 @Component({
   selector: 'app-listas',
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './listas.component.html',
   styleUrl: './listas.component.scss'
 })
@@ -20,7 +21,7 @@ export class ListasComponent {
 
   clientesConProductos: { cliente: string; totalProductos: number }[] = [];
 
-  indexPlanificacion: any = null
+  indexPlanificacion: any = 0;
 
   ordenActual: { columna: string; ascendente: boolean } = {
     columna: 'totalGastado', // Columna inicial para el ordenamiento
@@ -32,24 +33,34 @@ export class ListasComponent {
 
 
   constructor() {
-    this.ReportesServices.getReportesAgrupados_(true).subscribe({
-      next: (reportes) => {
-        this.reportesAgrupados = reportes;
-        this.reportesAgrupadosOrdenados = [...this.reportesAgrupados];
-      },
-      error: (error) => {
-        console.error('Error al cargar los reportes:', error);
-      }
-    });
+    this.indexPlanificacion = this.planificacionService.planificacion().length - 1
+    this.refresh()
+  }
 
+  cambiar() {
+    this.refresh()
+  }
+
+  refresh() {
     setTimeout(() => {
       if (!this.planificacionService.loading()) {
-        this.indexPlanificacion = this.planificacionService.planificacion().length - 1
+        this.ReportesServices.getReportesAgrupados_(true, this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
+          next: (reportes) => {
+            this.reportesAgrupados = reportes;
+            this.reportesAgrupadosOrdenados = [...this.reportesAgrupados];
+          },
+          error: (error) => {
+            console.error('Error al cargar los reportes:', error);
+          }
+        });
         this.calcularProductosPorCliente()
         this.calcularVentasPorZona()
       }
     }, 1000);
+  }
 
+  simplificar(date: string) {
+    return date.split('T')[0]
   }
 
   puntos(puntos: any) {
@@ -62,7 +73,6 @@ export class ListasComponent {
 
   obtenerIncentivo(puntos: number, incentivos: any) {
     // Si los puntos son menores que el mínimo del primer rango
-    console.log(incentivos)
     if (puntos < incentivos[0].de) {
       return 0;  // No hay incentivo
     }
@@ -78,6 +88,44 @@ export class ListasComponent {
     }
 
     return 0;  // Si no está en ningún rango, devolvemos 0
+  }
+
+  obtenerIncentivos(Puntos_Mystic: number, puntos_Qerametik: any) {
+    let totales = 0;
+    let mystic = 0;
+    let Qerametik = 0;
+
+    if (Puntos_Mystic < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos[0].de) {
+      mystic = 0;
+    } else {
+      for (let i = 0; i < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos.length; i++) {
+        let incentivo = this.planificacionService.planificacion()[this.indexPlanificacion].incentivos[i];
+
+        // Verificamos si los puntos están dentro del rango
+        if (Puntos_Mystic >= incentivo.de && Puntos_Mystic <= incentivo.hasta) {
+          mystic = incentivo.incentivo;  // Devolvemos el incentivo
+        }
+      }
+    }
+
+    if (puntos_Qerametik < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos_qerametik[0].de) {
+      Qerametik = 0;
+    } else {
+      for (let i = 0; i < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos_qerametik.length; i++) {
+        let incentivo = this.planificacionService.planificacion()[this.indexPlanificacion].incentivos_qerametik[i];
+
+        // Verificamos si los puntos están dentro del rango
+        if (puntos_Qerametik >= incentivo.de && puntos_Qerametik <= incentivo.hasta) {
+          Qerametik = incentivo.incentivo;  // Devolvemos el incentivo
+        }
+      }
+    }
+
+    return {
+      totales: mystic + Qerametik,
+      mystic: mystic,
+      qerametik: Qerametik
+    }
   }
 
   BuscarInfo(prom: string) {
@@ -182,7 +230,7 @@ export class ListasComponent {
 
   CambiarAfijas(fijas: any) {
     if (fijas.value === 'Fijas') {
-      this.ReportesServices.getReportesAgrupados_(true).subscribe({
+      this.ReportesServices.getReportesAgrupados_(true, this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
         next: (reportes) => {
           this.reportesAgrupados = reportes;
           this.reportesAgrupadosOrdenados = [...this.reportesAgrupados];
@@ -192,7 +240,7 @@ export class ListasComponent {
         }
       });
     } else {
-      this.ReportesServices.getReportesAgrupados_(false).subscribe({
+      this.ReportesServices.getReportesAgrupados_(false, this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
         next: (reportes) => {
           this.reportesAgrupados = reportes;
           this.reportesAgrupadosOrdenados = [...this.reportesAgrupados];

@@ -68,7 +68,12 @@ export default class PlanificacionComponent {
       de: 0,
       hasta: 0,
       incentivo: 0
-    }], // Array de incentivos por ventas (de, hasta, incentivo)
+    }],
+    incentivos_qerametik: [{
+      de: 0,
+      hasta: 0,
+      incentivo: 0
+    }],  // Array de incentivos por ventas (de, hasta, incentivo)
     planificacion: [] // Planificación semanal (por promotora y cliente)
   };
 
@@ -78,6 +83,7 @@ export default class PlanificacionComponent {
       if (this.servicePlanificacion.planificacion().length > 0) {
         this.data = this.servicePlanificacion.planificacion()[this.servicePlanificacion.planificacion().length - 1]
         this.metas = this.data.incentivos.length;
+        this.metas_ = this.data.incentivos_qerametik.length;
         this.data.inicio = new Date(this.data.inicio).toISOString().slice(0, 10);
         this.data.cierre = new Date(this.data.cierre).toISOString().slice(0, 10);
         this.calcularSemanas()
@@ -87,6 +93,7 @@ export default class PlanificacionComponent {
   }
 
   public metas = 1
+  public metas_ = 1
   public semana_selected = 0
 
   Aja(i: number) {
@@ -152,11 +159,22 @@ export default class PlanificacionComponent {
     this.metas++
     this.data.incentivos.push({ de: 0, hasta: 0, incentivo: 0 });
   }
+  addMeta_() {
+    this.metas_++
+    this.data.incentivos_qerametik.push({ de: 0, hasta: 0, incentivo: 0 });
+  }
 
   removeMeta(index: number) {
     this.metas--
     if (this.data.incentivos.length > 1) {
       this.data.incentivos.splice(index, 1);
+    }
+  }
+
+  removeMeta_(index: number) {
+    this.metas_--
+    if (this.data.incentivos_qerametik.length > 1) {
+      this.data.incentivos_qerametik.splice(index, 1);
     }
   }
 

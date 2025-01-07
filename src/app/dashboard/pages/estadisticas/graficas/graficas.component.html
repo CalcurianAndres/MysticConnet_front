@@ -1,3 +1,44 @@
+<span class="header">
+    @if(planificacionService.loading()){
+    <app-loadings></app-loadings>
+    } @else {
+    @if(indexPlanificacion){
+    <div class="field is-grouped">
+        <div class="control">
+            <label for="" class="label">Mes</label>
+            <div class="select">
+                <select (change)="FijasPorDestajo()">
+                    <option value="Fijas">Fijas</option>
+                    <option values="NoFijas">Por destajo</option>
+                </select>
+            </div>
+        </div>
+        <div class="control">
+            <label for="" class="label">Mes</label>
+            <div class="select">
+                <select [(ngModel)]="indexPlanificacion" (change)="cambiarPlanificacion()">
+                    @for(planificaciones of planificacionService.planificacion(); track $index){
+                    <option [value]="$index">{{planificaciones.mes}}</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="control">
+            <label for="" class="label">Inicio</label>
+            <input type="date" class="input"
+                [value]="simplificar(planificacionService.planificacion()[indexPlanificacion].inicio)" disabled>
+        </div>
+        <div class="control">
+            <label for="" class="label">Cierre</label>
+            <input type="date" class="input"
+                [value]="simplificar(planificacionService.planificacion()[indexPlanificacion].cierre)" disabled>
+        </div>
+    </div>
+    }
+    }
+    <br>
+</span>
+
 <div class="columns">
     <div class="column">
         <div class="card">
@@ -34,9 +75,9 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>{{contarTotalesPorMarcaYLinea(ServiceReportes.reportes()).productoMasVendidoPorMarca.Mystic}}
+                            <td>{{ProductoMasVendidoPorMarca.Mystic}}
                             </td>
-                            <td>{{contarTotalesPorMarcaYLinea(ServiceReportes.reportes()).productoMasVendidoPorMarca.Qerametik}}
+                            <td>{{ProductoMasVendidoPorMarca.Qerametik}}
                             </td>
                         </tr>
                     </tbody>

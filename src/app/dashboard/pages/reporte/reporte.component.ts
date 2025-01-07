@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { arrayProductos, productos, reportes } from '@interfaces/req-respons';
+import { arrayProductos, clientes, productos, reportes } from '@interfaces/req-respons';
 import { ClientesResponseService } from '@services/clientes-response.service';
 import { LoginService } from '@services/login.service';
 import { PlanificacionService } from '@services/planificacion.service';
@@ -24,7 +24,8 @@ export default class ReporteComponent {
   public planificacion = inject(PlanificacionService)
 
   public searchTerm: string = ''; // Término de búsqueda
-  public filteredProductos: productos[] = []; // Productos filtrados
+  public filteredProductos: productos[] = []; // Productos filtradosUtilizar lista antigua
+  public filteredClientes: clientes[] = []; // Productos filtradosUtilizar lista antigua
   public Informacion = signal(true)//con esto se muestra la información del despacho
   public isRotated = signal(false);
   public ProductosSelected: { producto: productos, inicial: number, final: number }[] = [];
@@ -37,6 +38,7 @@ export default class ReporteComponent {
   public date_log: string = ''
 
   public CargadaInformacion = signal(false);
+  usarListaAntigua = false;
 
   public data: reportes =
     {
@@ -51,6 +53,7 @@ export default class ReporteComponent {
 
   public marca_seleccionada = ''
   public cliente = ''
+  public modalCliente = false
 
   constructor() {
     this.date_log = this.getFormattedDate()
@@ -63,6 +66,16 @@ export default class ReporteComponent {
     // }, 1000);
   }
 
+  addCliente(cliente: any) {
+    if (cliente) {
+      this.establecimiento = cliente;
+    } else {
+      this.establecimiento = ''
+    }
+
+    this.modalCliente = false;
+  }
+
   // Método para filtrar los productos según el nombre
   filterProductos(): void {
     if (this.searchTerm.trim() === '') {
@@ -70,8 +83,32 @@ export default class ReporteComponent {
       this.filteredProductos = [];
     } else {
       // Si no está vacío, filtrar los productos según el término de búsqueda
-      this.filteredProductos = this.ProductosServices.productos().filter(producto =>
-        producto.producto.toLowerCase().includes(this.searchTerm.toLowerCase()) && producto.marca === this.marca_seleccionada
+      if (!this.usarListaAntigua) {
+        this.filteredProductos = this.ProductosServices.productos().filter(producto =>
+          producto.producto.toLowerCase().includes(this.searchTerm.toLowerCase()) &&
+          producto.marca === this.marca_seleccionada &&
+          producto.linea != 'Antigua'
+        );
+      } else {
+        this.filteredProductos = this.ProductosServices.productos().filter(producto =>
+          producto.producto.toLowerCase().includes(this.searchTerm.toLowerCase()) &&
+          producto.marca === this.marca_seleccionada &&
+          producto.linea === 'Antigua'
+        );
+      }
+    }
+  }
+
+  BuscarCliente(e: any) {
+    console.log(e.value)
+    if (e.value.trim() === '') {
+      // Si el campo de búsqueda está vacío, mostrar el array vacío
+      this.filteredClientes = [];
+    } else {
+      // Si no está vacío, filtrar los productos según el término de búsqueda
+      this.filteredClientes = this.ClientServices.clientes().filter(cliente =>
+        cliente.cliente.toLowerCase().includes(e.value.toLowerCase()) &&
+        cliente.marca === this.marca_seleccionada
       );
     }
   }
@@ -107,8 +144,8 @@ export default class ReporteComponent {
   }
 
   agregarProducto(index: productos['_id']): void {
-    this.searchTerm = '';  // Limpiar el campo de búsqueda
-    this.filterProductos();  // Filtrar los productos según el nuevo término de búsqueda (si es necesario)
+    // this.searchTerm = '';  // Limpiar el campo de búsqueda
+    // this.filterProductos();  // Filtrar los productos según el nuevo término de búsqueda (si es necesario)
 
     // Buscar el producto en el array de Productos
     const productoDB: any = this.ProductosServices.productos().find(producto => producto._id === index);
@@ -131,7 +168,7 @@ export default class ReporteComponent {
 
 
   VerificarReporte() {
-    return this.ProductosSelected.every(p => p.inicial > 0 && (p.final > 0 && p.final <= p.inicial))
+    return this.ProductosSelected.every(p => p.inicial > 0 && (p.inicial > 0 && p.final <= p.inicial))
   }
 
   eliminarDeProductosSelected(index: number) {

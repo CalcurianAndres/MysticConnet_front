@@ -22,6 +22,15 @@ export default class EstadisticasComponent {
   public planificacionService = inject(PlanificacionService)
   public active: boolean = false;
   indexPlanificacion: any = 0
+  public promotorasFiltered: any = [];
+
+  public promotorasFilteredFunction(data: any) {
+    if (data.value === 'fija') {
+      this.promotorasFiltered = this.promotoras.users().filter((promotora: any) => promotora.fija === true);
+    } else {
+      this.promotorasFiltered = this.promotoras.users().filter((promotora: any) => promotora.fija === false);
+    }
+  }
 
 
   reportesAgrupados: ReporteAgrupado[] = []; // Lista para almacenar los datos
@@ -33,22 +42,43 @@ export default class EstadisticasComponent {
   constructor() {
 
     // Consumir el servicio y asignar los datos
-    this.ReportesServices.getReportesAgrupados().subscribe({
-      next: (reportes) => {
-        this.reportesAgrupados = reportes;
-        console.log(this.reportesAgrupados)
-      },
-      error: (error) => {
-        console.error('Error al cargar los reportes:', error);
-      }
-    });
-
     setTimeout(() => {
       if (!this.planificacionService.loading()) {
         this.indexPlanificacion = this.planificacionService.planificacion().length - 1
+        this.promotorasFilteredFunction({ value: 'fija' })
+        this.ReportesServices.getReportesAgrupados(true, this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
+          next: (reportes) => {
+            this.reportesAgrupados = reportes;
+            console.log(this.reportesAgrupados)
+          },
+          error: (error) => {
+            console.error('Error al cargar los reportes:', error);
+          }
+        });
       }
-    }, 1000);
+    }, 500);
 
+  }
+
+  cambiarPlanificacion() {
+    setTimeout(() => {
+      if (!this.planificacionService.loading()) {
+        this.promotorasFilteredFunction({ value: 'fija' })
+        this.ReportesServices.getReportesAgrupados(true, this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
+          next: (reportes) => {
+            this.reportesAgrupados = reportes;
+            console.log(this.reportesAgrupados)
+          },
+          error: (error) => {
+            console.error('Error al cargar los reportes:', error);
+          }
+        });
+      }
+    }, 500);
+  }
+
+  simplificar(date: string) {
+    return date.split('T')[0]
   }
 
   togglePromotoraSection(index: number) {
@@ -71,7 +101,11 @@ export default class EstadisticasComponent {
 
   buscarDiasTrabajados(nombre: string, apellido: string): number {
     const reporte = this.reportesAgrupados.find(r => r.promotora === `${nombre} ${apellido}`);
-    return reporte ? reporte.reportes.length : 0;
+    if (reporte) {
+      const fechasUnicas = new Set(reporte.reportes.map(r => r.fecha));
+      return fechasUnicas.size;
+    }
+    return 0;
   }
 
   sueldodiario(sueldo: any, diasTrabajados: number) {
@@ -96,13 +130,15 @@ export default class EstadisticasComponent {
     manana.setDate(hoy.getDate() + 1); // Agregar un día
     let end = manana;
     const start = new Date(this.planificacionService.planificacion()[this.indexPlanificacion].inicio);
-    if (new Date(this.planificacionService.planificacion()[this.indexPlanificacion].cierre) <= hoy) {
+    if (new Date(this.planificacionService.planificacion()[this.indexPlanificacion].cierre) < hoy) {
       end = new Date(this.planificacionService.planificacion()[this.indexPlanificacion].cierre);
     }
     const fechas: string[] = [];
 
     while (start <= end) {
-      fechas.push(this.formatFecha(start));  // Agregar la fecha formateada al array
+      const fecha = new Date(start);
+      fecha.setDate(fecha.getDate() + 1); // Agregar un día a la fecha
+      fechas.push(this.formatFecha(fecha));  // Agregar la fecha formateada al array
       start.setDate(start.getDate() + 1);  // Avanzar un día
     }
 
@@ -121,8 +157,8 @@ export default class EstadisticasComponent {
     const fechaFormateada = this.convertirFechaAISO(fecha); // Asegúrate de usar el mismo formato
     const reporte = this.reportesAgrupados.find(r => r.promotora === nombreCompleto);
     if (reporte) {
-      let detallado = reporte.reportes.find(reporte => reporte.fecha === fechaFormateada)
-      if (detallado) {
+      let detallado = reporte.reportes.filter(reporte => reporte.fecha === fechaFormateada)
+      if (detallado.length > 0) {
         return detallado
       } else {
         return
@@ -181,23 +217,53 @@ export default class EstadisticasComponent {
     }
   }
 
-  obtenerIncentivo(puntos: number, incentivos: any) {
-    // Si los puntos son menores que el mínimo del primer rango
-    if (puntos < incentivos[0].de) {
-      return 0;  // No hay incentivo
+  obtenerIncentivo(nombre: string, apellido: string) {
+
+    let reportes = this.reportesAgrupados.find(r => r.promotora === `${nombre} ${apellido}`)
+
+    let Puntos_Mystic = 0;
+    let puntos_Qerametik = 0;
+
+    if (reportes) {
+      Puntos_Mystic = reportes.puntosMystic;
+      puntos_Qerametik = reportes.puntosQerametik;
     }
 
-    // Iteramos a través de los incentivos
-    for (let i = 0; i < incentivos.length; i++) {
-      let incentivo = incentivos[i];
+    let totales = 0;
+    let mystic = 0;
+    let Qerametik = 0;
 
-      // Verificamos si los puntos están dentro del rango
-      if (puntos >= incentivo.de && puntos <= incentivo.hasta) {
-        return incentivo.incentivo;  // Devolvemos el incentivo
+    if (Puntos_Mystic < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos[0].de) {
+      mystic = 0;
+    } else {
+      for (let i = 0; i < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos.length; i++) {
+        let incentivo = this.planificacionService.planificacion()[this.indexPlanificacion].incentivos[i];
+
+        // Verificamos si los puntos están dentro del rango
+        if (Puntos_Mystic >= incentivo.de && Puntos_Mystic <= incentivo.hasta) {
+          mystic = incentivo.incentivo;  // Devolvemos el incentivo
+        }
       }
     }
 
-    return 0;  // Si no está en ningún rango, devolvemos 0
+    if (puntos_Qerametik < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos_qerametik[0].de) {
+      Qerametik = 0;
+    } else {
+      for (let i = 0; i < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos_qerametik.length; i++) {
+        let incentivo = this.planificacionService.planificacion()[this.indexPlanificacion].incentivos_qerametik[i];
+
+        // Verificamos si los puntos están dentro del rango
+        if (puntos_Qerametik >= incentivo.de && puntos_Qerametik <= incentivo.hasta) {
+          Qerametik = incentivo.incentivo;  // Devolvemos el incentivo
+        }
+      }
+    }
+
+    return {
+      totales: mystic + Qerametik,
+      mystic: mystic,
+      qerametik: Qerametik
+    }
   }
 
   noHuboReporteAyer(nombre: string, apellido: string): boolean {

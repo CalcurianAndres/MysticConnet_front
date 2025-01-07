@@ -1,4 +1,32 @@
-<div class="formulario_envio_informacion">
+<div class="modal" [ngClass]="{'is-active':modalCliente}">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <div class="modal-card-body">
+            <p class="title">Buscar cliente</p>
+            <input type="text" name="" id="" class="input" (input)="BuscarCliente($event.target)">
+            <hr>
+            <table class="table is-fullwidth is-striped">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Clientes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (cliente of filteredClientes; track $index) {
+                    <tr>
+                        <td><i class="fas fa-plus" style="color: rgb(100, 180, 100)"
+                                (click)="addCliente(cliente._id)"></i></td>
+                        <td>{{cliente.cliente}}</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class=" formulario_envio_informacion">
 
     <div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
         <div class="card-content">
@@ -10,7 +38,7 @@
                 <div class="field is-grouped">
                     <div class="control">
                         <!-- [disabled]="loginSevice.usuario.restringido" -->
-                        <input type="date" class="input" [value]="date_log" [max]="date_log"
+                        <input type="date" class="input" [(ngModel)]="date_log" [max]="date_log"
                             (change)="verFormato($event.target)">
                     </div>
                 </div>
@@ -41,10 +69,17 @@
                 </div>
                 @if(marca_seleccionada && marca_seleccionada != 'Falta'){
                 <div class="control">
+                    <label for="" class="label"> </label>
+                    <button class="button is-success" (click)="modalCliente = true">
+                        <span class="icon"><i class="fas fa-search"></i></span>
+                    </button>
+                </div>
+                <div class="control">
                     <label for="" class="label">Establecimiento</label>
                     <div class="select">
                         <select [(ngModel)]="establecimiento">
-                            @for (clientes of ClientServices.ClientePorMarca(marca_seleccionada); track $index) {
+                            @for (clientes of ClientServices.ClientePorMarca(marca_seleccionada); track $index)
+                            {
                             <option value="{{clientes._id}}">{{clientes.cliente}}</option>
                             }
                         </select>
@@ -77,6 +112,7 @@
                 </div>
             </div>
             @if (tipo === 'Evento') {
+            @if(marca_seleccionada === 'Mystic'){
             <div class="card">
                 <div class="card-content">
                     <div class="field is-grouped">
@@ -101,6 +137,19 @@
                     </div>
                 </div>
             </div>
+            }@else{
+            <div class="card-content">
+                <div class="field is-grouped">
+                    <div class="control">
+                        <input type="radio" name="Tipo_evento" value="Qerastyle" [(ngModel)]="tipo_evento"> Qerastyle
+                    </div>
+                    <div class="control">
+                        <input type="radio" name="Tipo_evento" value="Ruleta" [(ngModel)]="tipo_evento">
+                        Ruleta
+                    </div>
+                </div>
+            </div>
+            }
             }
             @if (establecimiento && tipo && marca_seleccionada) {
             @if(tipo != 'Evento'){
@@ -134,6 +183,14 @@
                     <label for="" class="label">Buscado de productos</label>
                     <input type="text" class="input" placeholder="Buscar producto" [(ngModel)]="searchTerm"
                         (input)="filterProductos()">
+                </div>
+            </div>
+            <div class="field">
+                <div class="control">
+                    <label for="" class="label"> </label>
+                    <input type="checkbox" [(ngModel)]="usarListaAntigua" (click)="filterProductos()"> Utilizar
+                    lista
+                    antigua
                 </div>
             </div>
             <hr>

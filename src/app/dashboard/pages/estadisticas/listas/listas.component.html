@@ -1,10 +1,36 @@
 <span class="title">Promotoras</span>
 <hr>
-<div class="select">
-    <select (change)="CambiarAfijas($event.target)">
-        <option value="Fijas">Fijas</option>
-        <option value="NoFijas">Por destajos</option>
-    </select>
+
+<div class="field is-grouped">
+    <div class="control">
+        <label for="" class="label"> </label>
+        <div class="select">
+            <select (change)="CambiarAfijas($event.target)">
+                <option value="Fijas">Fijas</option>
+                <option value="NoFijas">Por destajos</option>
+            </select>
+        </div>
+    </div>
+    <div class="control">
+        <label for="" class="label">Mes</label>
+        <div class="select">
+            <select [(ngModel)]="indexPlanificacion" (change)="cambiar()">
+                @for(planificaciones of planificacionService.planificacion(); track $index){
+                <option [value]="$index">{{planificaciones.mes}}</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="control">
+        <label for="" class="label">Inicio</label>
+        <input type="date" class="input"
+            [value]="simplificar(planificacionService.planificacion()[indexPlanificacion].inicio)" disabled>
+    </div>
+    <div class="control">
+        <label for="" class="label">Cierre</label>
+        <input type="date" class="input"
+            [value]="simplificar(planificacionService.planificacion()[indexPlanificacion].cierre)" disabled>
+    </div>
 </div>
 <table class="table is-fullwidth is-striped">
     <thead>
@@ -40,16 +66,28 @@
         <tr>
             <td>{{promotora.promotora}}</td>
             <td>{{promotora.conteoMetaUnidades}}
-                @if(promotora.conteoMetaUnidades === 1){
-                vez
-                } @else {
-                veces
-                }
             </td>
-            <td>{{promotora.productosVendidos}}</td>
-            <td>{{promotora.puntosAcumulados}}</td>
-            <td>{{obtenerIncentivo(promotora.puntosAcumulados,
-                planificacionService.planificacion()[indexPlanificacion].incentivos) | currency:'USD'}}</td>
+            <td style="width: 200px;">{{promotora.productosVendidos}}
+                <br>{{promotora.productosMystic}} Mystic
+                <br>{{promotora.productosQerametik}} Qerametik
+            </td>
+            <td style="width: 200px;">
+                {{promotora.puntosAcumulados}}
+                <br>{{promotora.puntosMystic}} Mystic
+                <br>{{promotora.puntosQerametik}} Qerametik
+            </td>
+            <td style="width: 200px;">{{obtenerIncentivos(promotora.puntosMystic,
+                promotora.puntosQerametik).totales|
+                currency:'USD'}}
+                <br>
+                <span *ngIf="obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).mystic > 0">
+                    Mystic: {{obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).mystic |
+                    currency:'USD'}} </span>
+                <br>
+                <span *ngIf="obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).qerametik > 0">
+                    Qerametik: {{obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).qerametik |
+                    currency:'USD'}} </span>
+            </td>
             <td>{{promotora.totalGastado | currency:'USD'}}</td>
             <td>{{(obtenerIncentivo(promotora.puntosAcumulados,
                 planificacionService.planificacion()[indexPlanificacion].incentivos) / promotora.totalGastado) * 100 |

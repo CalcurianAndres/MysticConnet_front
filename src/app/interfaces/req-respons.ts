@@ -83,6 +83,10 @@ export interface ReporteAgrupado {
     totalGastado: number; // Total del dinero gastado
     productosVendidos: number;
     conteoMetaUnidades: number,
+    productosMystic: number,
+    productosQerametik: number,
+    puntosMystic: number,
+    puntosQerametik: number,
     reportes: ReporteSimplificado[]; // Lista de reportes asociados
 }
 
@@ -144,5 +148,6 @@ export interface planificacion {
         }
     },
     incentivos: incentivos_[],
+    incentivos_qerametik: incentivos_[],
     planificacion: any // Planificación semanal (por promotora y cliente)
 }

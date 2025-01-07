@@ -32,7 +32,7 @@
         <div class="control">
             <label for="" class="label">Mes</label>
             <div class="select">
-                <select [(ngModel)]="indexPlanificacion">
+                <select [(ngModel)]="indexPlanificacion" (change)="cambiarPlanificacion()">
                     @for(planificaciones of planificacionService.planificacion(); track $index){
                     <option [value]="$index">{{planificaciones.mes}}</option>
                     }
@@ -41,23 +41,35 @@
         </div>
         <div class="control">
             <label for="" class="label">Inicio</label>
-            <input type="date" class="input" [value]="planificacionService.planificacion()[indexPlanificacion].inicio"
-                disabled>
+            <input type="date" class="input"
+                [value]="simplificar(planificacionService.planificacion()[indexPlanificacion].inicio)" disabled>
         </div>
         <div class="control">
             <label for="" class="label">Cierre</label>
-            <input type="date" class="input" [value]="planificacionService.planificacion()[indexPlanificacion].cierre"
-                disabled>
+            <input type="date" class="input"
+                [value]="simplificar(planificacionService.planificacion()[indexPlanificacion].cierre)" disabled>
         </div>
     </div>
     }
     }
     <br>
 </span>
+
+<div class="field">
+    <div class="control">
+        <label for="" class="label">Promotoras</label>
+        <div class="select">
+            <select (change)="promotorasFilteredFunction($event.target)">
+                <option value="fija">Fijas</option>
+                <option value="por destajo">Por destajo</option>
+            </select>
+        </div>
+    </div>
+</div>
 @if(planificacionService.loading()){
 <app-loadings></app-loadings>
 } @else {
-@for( promotora of promotoras.users(); track $index; let i = $index){
+@for( promotora of promotorasFiltered; track $index; let i = $index){
 @if (!planificacionService.planificacion()[indexPlanificacion]) {
 <app-loadings></app-loadings>
 <br>
@@ -68,8 +80,8 @@
             <span *ngIf="noHuboReporteAyer(promotora.nombre, promotora.apellido)" class="punto-rojo"></span> 
             {{promotora.nombre}} {{promotora.apellido}} ({{getPuntos(promotora.nombre, promotora.apellido) || 0}}
             puntos -
-            {{obtenerIncentivo(puntos(getPuntos(promotora.nombre, promotora.apellido)),
-            planificacionService.planificacion()[indexPlanificacion].incentivos) | currency:'USD'}} Incentivo) -
+            {{obtenerIncentivo(promotora.nombre, promotora.apellido).totales | currency:'USD'}} Incentivo)
+            -
             {{buscarDiasTrabajados(promotora.nombre, promotora.apellido) | number}} dia(s) trabajado(s)
         </p>
         <button class="card-header-icon" aria-label="more options" (click)="togglePromotoraSection(i)">
@@ -91,10 +103,9 @@
                 <td>{{ getGastado(promotora.nombre, promotora.apellido) || 0 | currency:'USD' }}</td>
                 <td>{{sueldodiario(promotora.sueldo, buscarDiasTrabajados(promotora.nombre, promotora.apellido)) |
                     currency:'USD'}}</td>
-                <td>{{obtenerIncentivo(puntos(getPuntos(promotora.nombre, promotora.apellido)),
-                    planificacionService.planificacion()[indexPlanificacion].incentivos) | currency:'USD'}}
+                <td>{{obtenerIncentivo(promotora.nombre, promotora.apellido).totales | currency:'USD'}}
                 </td>
-                <td [ngClass]="{'low': ((puntos(promotora.sueldo) +
+                <!-- <td [ngClass]="{'low': ((puntos(promotora.sueldo) +
                 obtenerIncentivo(puntos(getPuntos(promotora.nombre, promotora.apellido)),
                 planificacionService.planificacion()[indexPlanificacion].incentivos)) * 100
                 / getGastado(promotora.nombre, promotora.apellido) || 0) >= 40}">
@@ -104,103 +115,104 @@
                     planificacionService.planificacion()[indexPlanificacion].incentivos)) * 100
                     / getGastado(promotora.nombre, promotora.apellido) || 0) | number: '1.0-1'
                     }}%
-                </td>
+                </td> -->
             </tr>
         </table>
-        @if(indexPlanificacion === 0){
         @for(fecha of getFechasDelRango(); track $index; let j = $index){
         <div>
             <div class="card">
                 <header class="card-header">
                     <p class="card-header-title">
                         {{fecha}} -
-                        @if(!getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)){
+                        @if(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha) === undefined){
                         No hay reportes registrados
                         } @else {
-
-                        {{getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.totalSubtotal |
-                        currency:'USD'}} ({{getReportesPorFecha(promotora.nombre, promotora.apellido,
-                        fecha)?.totalPuntos}} Puntos)
+                        @for(reporte of getReportesPorFecha(promotora.nombre,
+                        promotora.apellido, fecha); track $index){
+                    <div>  ({{reporte.marca}}) 
+                        {{reporte.totalSubtotal | currency:'USD'}} ({{reporte.totalPuntos}} Puntos)
 
                         @if(promotora.fija){
 
-                        @if(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.tipo === 'Impulso'){
+                        @if(reporte.tipo === 'Impulso'){
 
-                        @if(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.marca === 'Mystic'){
+                        @if(reporte.marca === 'Mystic'){
 
-                        @if(puntos(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.totalPuntos) >=
+                        @if(puntos(reporte.totalPuntos) >=
                         planificacionService.planificacion()[indexPlanificacion].metas.tradicional.mystic.impulso){
-                         <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
+                        <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
                         } @else{
-                         <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
+                        <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
                         }
                         } @else {
-                        @if(puntos(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.totalPuntos) >=
+                        @if(puntos(reporte.totalPuntos) >=
                         planificacionService.planificacion()[indexPlanificacion].metas.tradicional.qerametik.impulso){
-                         <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
+                        <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
                         } @else{
-                         <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
+                        <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
                         }
                         }
                         } @else {
-                        @if(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.marca === 'Mystic'){
+                        @if(reporte.marca === 'Mystic'){
 
-                        @if(puntos(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.totalPuntos) >=
+                        @if(puntos(reporte.totalPuntos) >=
                         planificacionService.planificacion()[indexPlanificacion].metas.tradicional.mystic.evento){
-                         <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
+                        <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
                         } @else{
-                         <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
+                        <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
                         }
                         } @else {
-                        @if(puntos(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.totalPuntos) >=
+                        @if(puntos(reporte.totalPuntos) >=
                         planificacionService.planificacion()[indexPlanificacion].metas.tradicional.qerametik.evento){
-                         <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
+                        <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
                         } @else{
-                         <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
+                        <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
                         }
                         }
                         }
                         } @else {
-                        @if(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.tipo === 'Impulso'){
+                        @if(reporte.tipo === 'Impulso'){
 
-                        @if(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.marca === 'Mystic'){
+                        @if(reporte.marca === 'Mystic'){
 
-                        @if(puntos(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.totalPuntos) >=
+                        @if(puntos(reporte.totalPuntos) >=
                         planificacionService.planificacion()[indexPlanificacion].metas.rebranding.mystic.impulso){
-                         <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
+                        <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
                         } @else{
-                         <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
+                        <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
                         }
                         } @else {
-                        @if(puntos(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.totalPuntos) >=
+                        @if(puntos(reporte.totalPuntos) >=
                         planificacionService.planificacion()[indexPlanificacion].metas.rebranding.qerametik.impulso){
-                         <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
+                        <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
                         } @else{
-                         <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
+                        <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
                         }
                         }
                         } @else {
-                        @if(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.marca === 'Mystic'){
+                        @if(reporte.marca === 'Mystic'){
 
-                        @if(puntos(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.totalPuntos) >=
+                        @if(puntos(reporte.totalPuntos) >=
                         planificacionService.planificacion()[indexPlanificacion].metas.rebranding.mystic.evento){
-                         <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
+                        <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
                         } @else{
-                         <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
+                        <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
                         }
                         } @else {
-                        @if(puntos(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.totalPuntos) >=
+                        @if(puntos(reporte.totalPuntos) >=
                         planificacionService.planificacion()[indexPlanificacion].metas.rebranding.qerametik.evento){
-                         <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
+                        <i class="far fa-thumbs-up" style="color: rgb(129, 228, 129);"></i>
                         } @else{
-                         <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
+                        <i class="far fa-thumbs-down" style="color: rgb(228, 129, 129);"></i>
                         }
                         }
                         }
                         }
+                    </div> 
+                    }
 
 
-                        }
+                    }
                     </p>
                     <button class="card-header-icon" aria-label="more options" (click)="toggleVentaSection(i, j)">
                         <span class="icon">
@@ -210,13 +222,13 @@
                 </header>
                 <!-- @ts-ignore -->
                 @if(getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)){
+                @for(reporte of getReportesPorFecha(promotora.nombre, promotora.apellido, fecha); track $index;){
                 <div class="card-content"
                     [ngClass]="{'oculto': !toggleVentas[i] || !toggleVentas[i][j], 'activo': toggleVentas[i] && toggleVentas[i][j]}">
-                    <b>Establecimiento:</b> {{getReportesPorFecha(promotora.nombre, promotora.apellido,
-                    fecha)?.cliente}} <br>
-                    <b>Tipo:</b> {{getReportesPorFecha(promotora.nombre, promotora.apellido, fecha)?.tipo}} <br>
-                    <b>Observación:</b> {{getReportesPorFecha(promotora.nombre, promotora.apellido,
-                    fecha)?.observacion}}
+                    <b>Establecimiento:</b> {{reporte.cliente}} <br>
+                    <b>Tipo:</b> {{reporte.tipo}} <br>
+                    <b>Marca:</b> {{reporte.marca}} <br>
+                    <b>Observación:</b> {{reporte.observacion}}
                     <hr>
                     <table class="table is-fullwidth is-striped"
                         [ngClass]="{'oculto': !toggleVentas[i] || !toggleVentas[i][j], 'activo': toggleVentas[i] && toggleVentas[i][j]}">
@@ -231,8 +243,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @for(productos of getReportesPorFecha(promotora.nombre, promotora.apellido,
-                            fecha)?.productos; track $index){
+                            @for(productos of reporte.productos; track $index){
                             <tr>
                                 <td>{{productos.linea}}</td>
                                 <td>{{productos.marca}}</td>
@@ -244,17 +255,13 @@
                             }
                         </tbody>
                     </table>
-
                 </div>
+                }
                 }
             </div>
 
         </div>
         <br>
-        }
-        } @else {
-        {{indexPlanificacion}}
-        <app-loadings></app-loadings>
         }
     </div>
 </div>
