@@ -24,6 +24,7 @@ export default class PlanificacionComponent {
   public aprobado: boolean[] = [];
   _aprobados_: { [key: number]: boolean[] } = {};
   public newPlanificacion: boolean = false;
+  public indexPlanificacion: any = 0;
 
   @Input() active!: boolean;
   @Output() onCloseModal = new EventEmitter();
@@ -87,7 +88,7 @@ export default class PlanificacionComponent {
         this.data.inicio = new Date(this.data.inicio).toISOString().slice(0, 10);
         this.data.cierre = new Date(this.data.cierre).toISOString().slice(0, 10);
         this.calcularSemanas()
-        console.log(this.data)
+        this.indexPlanificacion = this.servicePlanificacion.planificacion().length - 1;
       }
     }, 500);
   }
@@ -148,6 +149,30 @@ export default class PlanificacionComponent {
   diaSemana(dia: number): string {
     const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
     return dias[dia];
+  }
+
+  filtrarMese() {
+    return ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'].filter(m =>
+      !this.servicePlanificacion.planificacion().some(plan => plan.mes === m))
+  }
+
+
+  cambiarPlanificacion(dato: any) {
+    if (!isNaN(Number(dato.value))) {
+      this.data = { ...this.servicePlanificacion.planificacion()[dato.value] };
+      this.data.inicio = this.servicePlanificacion.planificacion()[dato.value].inicio.split('T')[0]
+      this.data.cierre = this.servicePlanificacion.planificacion()[dato.value].cierre.split('T')[0]
+      this.calcularSemanas()
+    } else {
+      this.data.mes = dato.value;
+      this.data.inicio = ''
+      this.data.cierre = ''
+      this.data.planificacion = []
+      if (this.data._id) {
+        delete this.data._id
+      }
+      this.semanas = []
+    }
   }
 
 
@@ -253,7 +278,6 @@ export default class PlanificacionComponent {
     let fecha_f = new Date(fecha);
     const fechaUTC = new Date(fecha_f.getTime() + (0 * 60 * 60 * 1000));
     const fechaConvertida = fechaUTC.toISOString();
-    console.log(fechaConvertida)
     return this.data.planificacion.some((p: any) => p.fecha == fechaConvertida && p.promotora === promotora)
   }
 

@@ -5,6 +5,8 @@ import { ReporteAgrupado } from '@interfaces/req-respons';
 import { PlanificacionService } from '@services/planificacion.service';
 import { ReportesResponseService } from '@services/reportes-response.service';
 import { UserResponseService } from '@services/user-response.service';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 @Component({
   selector: 'app-listas',
@@ -13,6 +15,61 @@ import { UserResponseService } from '@services/user-response.service';
   styleUrl: './listas.component.scss'
 })
 export class ListasComponent {
+
+  // PRUEBA EXCEL
+
+  exportarExcel() {
+    // Obtener los datos de la tabla
+    const datos: any[] = this.reportesAgrupadosOrdenados.map(promotora => ({
+      Promotora: promotora.promotora,
+      'Meta alcanzada': promotora.conteoMetaUnidades,
+      'Productos vendidos': promotora.productosVendidos,
+      'Productos Mystic': promotora.productosMystic,
+      'Productos Qerametik': promotora.productosQerametik,
+      Puntuación: promotora.puntosAcumulados,
+      'Puntos Mystic': promotora.puntosMystic,
+      'Puntos Qerametik': promotora.puntosQerametik,
+      Incentivo: this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).totales,
+      'Monto Und. vendidas': promotora.totalGastado,
+      Incidencia: this.calcularIncidencia(promotora),
+      Sueldo: this.BuscarInfo(promotora.promotora)?.sueldo,
+      'Sueldo por día': this.calcularSueldoPorDia(promotora),
+      'Ventas por día': this.calcularVentasPorDia(promotora),
+      'Incidencia %': this.calcularIncidenciaPorcentaje(promotora)
+    }));
+
+    // Crear el libro de Excel
+    const hoja = XLSX.utils.json_to_sheet(datos);
+    const libro: XLSX.WorkBook = { Sheets: { 'Reporte': hoja }, SheetNames: ['Reporte'] };
+
+    // Guardar como archivo
+    const excelBuffer: any = XLSX.write(libro, { bookType: 'xlsx', type: 'array' });
+    const blob: Blob = new Blob([excelBuffer], { type: 'application/octet-stream' });
+    saveAs(blob, 'ReportePromotoras.xlsx');
+  }
+
+  calcularIncidencia(promotora: any): string {
+    // Agrega la lógica necesaria para calcular la incidencia
+    return ((this.obtenerIncentivo(promotora.puntosAcumulados, this.planificacionService.planificacion()[this.indexPlanificacion].incentivos) / promotora.totalGastado) * 100).toFixed(2) + '%';
+  }
+
+  calcularSueldoPorDia(promotora: any): number {
+    return this.puntos(this.BuscarInfo(promotora.promotora)?.sueldo) / promotora.reportes.length;
+  }
+
+  calcularVentasPorDia(promotora: any): number {
+    return promotora.totalGastado / promotora.reportes.length;
+  }
+
+  calcularIncidenciaPorcentaje(promotora: any): string {
+    return (
+      (this.calcularSueldoPorDia(promotora) / this.calcularVentasPorDia(promotora)) *
+      100
+    ).toFixed(2) + '%';
+  }
+
+
+  // PRUEBA EXCEL
 
   public ReportesServices = inject(ReportesResponseService)
   public reportesAgrupados!: ReporteAgrupado[];
@@ -162,64 +219,78 @@ export class ListasComponent {
   calcularProductosPorCliente(): void {
     const clienteMap: Record<string, { cliente: string; totalProductos: number }> = {};
 
-    this.ReportesServices.reportes().forEach((reporte) => {
-      if (
-        !reporte.cliente ||
-        !reporte.cliente._id ||
-        reporte.cliente.cliente === 'FALTA JUSTIFICADA'
-      ) {
-        console.warn('Reporte excluido (cliente inválido o "FALTA JUSTIFICADA"):', reporte);
-        return;
+    this.ReportesServices.cargarReportes_(this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
+      next: (_reportes) => {
+        _reportes.forEach((reporte) => {
+          if (
+            !reporte.cliente ||
+            !reporte.cliente._id ||
+            reporte.cliente.cliente === 'FALTA JUSTIFICADA'
+          ) {
+            console.warn('Reporte excluido (cliente inválido o "FALTA JUSTIFICADA"):', reporte);
+            return;
+          }
+
+          const clienteId = reporte.cliente._id;
+          const clienteNombre = reporte.cliente.cliente;
+
+          if (!clienteMap[clienteId]) {
+            clienteMap[clienteId] = { cliente: clienteNombre, totalProductos: 0 };
+          }
+
+          // Sumar productos vendidos en este reporte
+          const totalProductosEnReporte = reporte.productos.reduce(
+            (suma, producto) => suma + producto.cantidad,
+            0
+          );
+
+          clienteMap[clienteId].totalProductos += totalProductosEnReporte;
+        });
+
+        // Convertir el objeto a un array y ordenar por cantidad de productos vendidos
+        this.clientesConProductos = Object.values(clienteMap).sort(
+          (a, b) => b.totalProductos - a.totalProductos
+        );
+      },
+      error: (error) => {
+        console.error('Error al cargar los reportes:', error);
       }
-
-      const clienteId = reporte.cliente._id;
-      const clienteNombre = reporte.cliente.cliente;
-
-      if (!clienteMap[clienteId]) {
-        clienteMap[clienteId] = { cliente: clienteNombre, totalProductos: 0 };
-      }
-
-      // Sumar productos vendidos en este reporte
-      const totalProductosEnReporte = reporte.productos.reduce(
-        (suma, producto) => suma + producto.cantidad,
-        0
-      );
-
-      clienteMap[clienteId].totalProductos += totalProductosEnReporte;
     });
-
-    // Convertir el objeto a un array y ordenar por cantidad de productos vendidos
-    this.clientesConProductos = Object.values(clienteMap).sort(
-      (a, b) => b.totalProductos - a.totalProductos
-    );
   }
 
   calcularVentasPorZona(): void {
     const zonaMap: Record<string, { zona: string; totalProductos: number }> = {};
 
-    this.ReportesServices.reportes().forEach((reporte) => {
-      if (!reporte.promotora || !reporte.promotora.region) {
-        console.warn('Reporte excluido (promotora sin zona):', reporte);
-        return;
+    this.ReportesServices.cargarReportes_(this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
+      next: (_reportes) => {
+        _reportes.forEach((reporte) => {
+          if (!reporte.promotora || !reporte.promotora.region) {
+            console.warn('Reporte excluido (promotora sin zona):', reporte);
+            return;
+          }
+
+          const zona = reporte.promotora.region;
+
+          if (!zonaMap[zona]) {
+            zonaMap[zona] = { zona, totalProductos: 0 };
+          }
+
+          const totalProductosEnReporte = reporte.productos.reduce(
+            (suma, producto) => suma + producto.cantidad,
+            0
+          );
+
+          zonaMap[zona].totalProductos += totalProductosEnReporte;
+        });
+
+        this.ventasPorZona = Object.values(zonaMap).sort(
+          (a, b) => b.totalProductos - a.totalProductos
+        );
+      },
+      error: (error) => {
+        console.error('Error al cargar los reportes:', error);
       }
-
-      const zona = reporte.promotora.region;
-
-      if (!zonaMap[zona]) {
-        zonaMap[zona] = { zona, totalProductos: 0 };
-      }
-
-      const totalProductosEnReporte = reporte.productos.reduce(
-        (suma, producto) => suma + producto.cantidad,
-        0
-      );
-
-      zonaMap[zona].totalProductos += totalProductosEnReporte;
-    });
-
-    this.ventasPorZona = Object.values(zonaMap).sort(
-      (a, b) => b.totalProductos - a.totalProductos
-    );
+    })
   }
 
 

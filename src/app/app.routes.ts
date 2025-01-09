@@ -12,11 +12,11 @@ export const routes: Routes = [
                 title: 'Administración',
                 loadComponent: () => import('./dashboard/pages/administracion/administracion.component')
             },
-            // {
-            //     path:'perfil/:id',
-            //     title:'Perfil',
-            //     loadComponent: () => import('./dashboard/pages/perfil/perfil.component')
-            // },
+            {
+                path: 'perfil',
+                title: 'Perfil',
+                loadComponent: () => import('./dashboard/pages/perfil/perfil.component')
+            },
             {
                 path: 'reportes',
                 title: 'Reportes',

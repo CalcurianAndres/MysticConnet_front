@@ -149,5 +149,6 @@ export interface planificacion {
     },
     incentivos: incentivos_[],
     incentivos_qerametik: incentivos_[],
-    planificacion: any // Planificación semanal (por promotora y cliente)
+    planificacion: any, // Planificación semanal (por promotora y cliente)
+    _id?: string,
 }

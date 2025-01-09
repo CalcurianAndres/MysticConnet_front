@@ -79,6 +79,12 @@
         </a>
 
         <div class="navbar-dropdown">
+          <a class="navbar-item" routerLink="reportes">
+            Reportar
+          </a>
+          <a class="navbar-item" routerLink="perfil">
+            Progreso
+          </a>
           <a class="navbar-item" (click)="CambioPass = true">
             Cambiar contraseña
           </a>
@@ -96,6 +102,12 @@
   </div>
 
   <div class="navbar-menu is-active" id="navMenu" *ngIf="mobile">
+    <a class="navbar-item" routerLink="reportes">
+      Reportar
+    </a>
+    <a class="navbar-item" routerLink="perfil">
+      Progreso
+    </a>
     <a class="navbar-item" (click)="CambioPass = true">
       Cambiar contraseña
     </a>

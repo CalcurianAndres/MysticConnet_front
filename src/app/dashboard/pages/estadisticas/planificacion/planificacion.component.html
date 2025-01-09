@@ -9,22 +9,19 @@
     <div class="field is-grouped">
         <div class="control">
             <label for="" class="label">Mes</label>
+            @if(!servicePlanificacion.loading()){
             <div class="select">
-                <select [(ngModel)]="data.mes">
-                    <option value="Enero">Enero</option>
-                    <option value="Febrero">Febrero</option>
-                    <option value="Marzo">Marzo</option>
-                    <option value="Abril">Abril</option>
-                    <option value="Mayo">Mayo</option>
-                    <option value="Junio">Junio</option>
-                    <option value="Julio">Julio</option>
-                    <option value="Agosto">Agosto</option>
-                    <option value="Septiembre">Septiembre</option>
-                    <option value="Octubre">Octubre</option>
-                    <option value="Noviembre">Noviembre</option>
-                    <option value="Diciembre">Diciembre</option>
+                <select (change)="cambiarPlanificacion($event.target)">
+                    @for (meses of servicePlanificacion.planificacion(); track $index) {
+                    <option value="{{$index}}">{{meses.mes}}</option>
+                    }
+                    @for (mes of filtrarMese(); track $index) {
+                    <option value="{{mes}}">{{mes}}</option>
+                    }
                 </select>
+
             </div>
+            }
         </div>
         <div class="control">
             <label for="" class="label">Inicio</label>

@@ -26,8 +26,8 @@ export class ReportesResponseService {
   public reportes = computed(() => this.#state().reportes);
   public loading = computed(() => this.#state().loading);
   public planificacionService = inject(PlanificacionService)
-  // public ruta = 'https://mysticconnectserver-production.up.railway.app/api'
-  public ruta = 'http://localhost:8080/api'
+  public ruta = 'https://mysticconnectserver-production.up.railway.app/api'
+  // public ruta = 'http://localhost:8080/api'
 
   constructor() {
     this.cargarReportes();
@@ -86,6 +86,14 @@ export class ReportesResponseService {
             0
           );
 
+          if (reporte.promotora.correo === 'usuario') {
+            console.log(
+              reporte.productos.reduce(
+                (suma, prod) => suma + prod.producto.precio * prod.cantidad,
+                0
+              )
+            )
+          }
           const precioReporte = reporte.productos.reduce(
             (suma, prod) => suma + prod.producto.precio * prod.cantidad,
             0
@@ -93,6 +101,12 @@ export class ReportesResponseService {
 
           const cantidadProductos = reporte.productos.reduce(
             (suma, prod) => suma + prod.cantidad,
+            0
+          );
+
+          // Calcular conteoMetaUnidades
+          const metaUnidades = reporte.productos.reduce(
+            (conteo, prod) => conteo + (prod.cantidad >= 10 ? 1 : 0), // Por ejemplo, contar productos con cantidad >= 10
             0
           );
 
@@ -105,6 +119,53 @@ export class ReportesResponseService {
               result[promotoraId].puntosQerametik += prod.producto.puntos * prod.cantidad;
             }
           });
+
+          // Verificar si la promotora alcanzó la meta de 30 unidades en este reporte
+          if (reporte.promotora.fija === true) {
+            if (reporte.tipo === 'Impulso') {
+              if (reporte.productos[0].producto.marca === 'Mystic') {
+                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.tradicional.mystic.impulso) {
+                  result[promotoraId].conteoMetaUnidades += 1;
+                }
+              } else {
+                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.tradicional.qerametik.impulso) {
+                  result[promotoraId].conteoMetaUnidades += 1;
+                }
+              }
+            } else {
+              if (reporte.productos[0].producto.marca === 'Mystic') {
+                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.tradicional.mystic.evento) {
+                  result[promotoraId].conteoMetaUnidades += 1;
+                }
+              } else {
+                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.tradicional.qerametik.evento) {
+                  result[promotoraId].conteoMetaUnidades += 1;
+                }
+              }
+            }
+          } else {
+            if (reporte.tipo === 'Impulso') {
+              if (reporte.productos[0].producto.marca === 'Mystic') {
+                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.rebranding.mystic.impulso) {
+                  result[promotoraId].conteoMetaUnidades += 1;
+                }
+              } else {
+                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.rebranding.qerametik.impulso) {
+                  result[promotoraId].conteoMetaUnidades += 1;
+                }
+              }
+            } else {
+              if (reporte.productos[0].producto.marca === 'Mystic') {
+                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.rebranding.mystic.evento) {
+                  result[promotoraId].conteoMetaUnidades += 1;
+                }
+              } else {
+                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.rebranding.qerametik.evento) {
+                  result[promotoraId].conteoMetaUnidades += 1;
+                }
+              }
+            }
+          }
 
           result[promotoraId].puntosAcumulados += puntosReporte;
           result[promotoraId].totalGastado += precioReporte;

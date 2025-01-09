@@ -1,1 +1,219 @@
-<p>perfil works!</p>
+<div class="modal" [ngClass]="{'is-active':modalCliente}">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <div class="modal-card-body">
+            <p class="title">Buscar cliente</p>
+            <input type="text" name="" id="" class="input" (input)="BuscarCliente($event.target)">
+            <hr>
+            <table class="table is-fullwidth is-striped">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Clientes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (cliente of filteredClientes; track $index) {
+                    <tr>
+                        <td><i class="fas fa-plus" style="color: rgb(100, 180, 100);cursor: pointer;"
+                                (click)="addCliente(cliente)"></i></td>
+                        <td>{{cliente.cliente}}</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@if(EditarReporte && !modalCliente){
+<div class="modal" [ngClass]="{'is-active': EditarReporte}">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <header class="modal-card-head">
+            <p class="modal-card-title">Editar reporte</p>
+            <button class="delete" aria-label="close" (click)="EditarReporte = !EditarReporte"></button>
+        </header>
+        <div class="modal-card-body">
+            <div class="field is-grouped">
+                <div class="control">
+                    <label for="" class="label">Fecha:</label>
+                    <input type="date" class="input" [(ngModel)]="ReporteSeleccionado.fecha">
+                </div>
+                <div class="control">
+                    <label for="" class="label">Marca:</label>
+                    <div class="select">
+                        <select [value]="MarcaSelected">
+                            <option value="Mystic">Mystic</option>
+                            <option value="Qerametik">Qerametic</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="field is-grouped">
+                <div class="control">
+                    <label for="" class="label"> </label>
+                    <button class="button is-success" (click)="modalCliente = !modalCliente">
+                        <span class="icon">
+                            <i class="fas fa-search"></i>
+                        </span>
+                    </button>
+                </div>
+                @if(ReporteSeleccionado.cliente._id){
+                <div class="control">
+                    <label for="" class="label">Establecimiento:</label>
+                    <input type="text" class="input" [(ngModel)]="ReporteSeleccionado.cliente.cliente" disabled>
+                </div>
+                }
+            </div>
+            <div class="field">
+                <div class="control">
+                    <label for="" class="label">Buscado de productos</label>
+                    <input type="text" class="input" placeholder="Buscar producto" [(ngModel)]="searchTerm"
+                        (input)="filterProductos()">
+                </div>
+
+                <div class="field">
+                    <div class="control">
+                        <label for="" class="label"> </label>
+                        <input type="checkbox" [(ngModel)]="usarListaAntigua" (click)="filterProductos()"> Utilizar
+                        lista
+                        antigua
+                    </div>
+                </div>
+
+            </div>
+            <hr>
+            <table class="table is-fullwidth is-hoverable is-striped">
+                <thead>
+                    @for (producto of filteredProductos; track $index) {
+                    <tr>
+                        <td style="width: 15px;">
+                            <button class=" button is-success is-small is-outlined" style="border: none;"
+                                (click)="AgregarProducto(producto)">
+                                <span class="icon"><i class="fas fa-plus-square"></i></span>
+                            </button>
+                        </td>
+                        <td>{{producto.producto}} ({{producto.linea}})</td>
+                    </tr>
+                    }
+                </thead>
+            </table>
+
+            <hr>
+            @for(producto of ReporteSeleccionado.productos; track $index) {
+            <div class="card">
+                <div class="card-head">
+                    <p class="card-header-title">{{producto.producto.producto}}</p>
+                </div>
+                <div class="card-content">
+                    <table class="table is-fullwidth is-striped">
+                        <thead>
+                            <tr>
+                                <th>Alm. Inicial</th>
+                                <th>Alm. Final</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <input type="number" class="input" [(ngModel)]="producto.inicio"
+                                        (input)="producto.cantidad = producto.inicio - producto.final">
+                                </td>
+                                <td>
+                                    <input type="number" class="input" [(ngModel)]="producto.final"
+                                        (input)="producto.cantidad = producto.inicio - producto.final">
+                                </td>
+                                <td>{{producto.cantidad}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="button is-danger is-small" (click)=" EliminarProducto($index)">
+                        <span class="icon"><i class="far fa-trash-alt"></i></span>
+                        <span>Eliminar</span>
+                    </button>
+                </div>
+            </div>
+            }
+            <button class="button is-success" (click)="GuardarReporte()">
+                <span class="icon"><i class="fas fa-save"></i></span>
+                <span>Guardar</span>
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
+    <div class="card-content">
+        <app-title title="Progreso" />
+        {{login.usuario.nombre}} {{login.usuario.apellido}}
+    </div>
+</div>
+
+<span class="title">
+    Progreso Mystic ({{totalCantidadMystic}} Productos - {{totalPuntosMystic}} Puntos)
+</span>
+<hr>
+
+@if(loading){
+<table class="table is-fullwidth is-striped">
+    <thead>
+        <th>Fecha</th>
+        <th>Puntuacion obtenida</th>
+        <th>Productos vendidos</th>
+        <th>Editar</th>
+    </thead>
+    <tbody>
+        @for(reporte of ReportesFiltradosMystic; track $index){
+        <tr>
+            <td>{{reporte.fecha | date:'dd/MM/YYYY'}}</td>
+            <td>{{reporte.puntuacionTotal}}</td>
+            <td>{{reporte.totalCantidad}}</td>
+            <td>
+                <button class="button" style="background-color: transparent; border: none; color: rgb(113, 184, 113);"
+                    (click)="EditarReporte_Mystic(reporte._id)">
+                    <span class="icon"><i class="fas fa-edit"></i></span>
+                </button>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+}@else {
+<app-loadings />
+}
+
+<span class="title">
+    Progreso Qerametik ({{totalCantidadQerametik}} Productos - {{totalPuntosQerametik}} Puntos)
+</span>
+<hr>
+
+@if(loading){
+<table class="table is-fullwidth is-striped">
+    <thead>
+        <th>Fecha</th>
+        <th>Puntuacion obtenida</th>
+        <th>Productos vendidos</th>
+        <th>Editar</th>
+    </thead>
+    <tbody>
+        @for(reporte of ReportesFiltradosQerametik; track $index){
+        <tr>
+            <td>{{reporte.fecha | date:'dd/MM/YYYY'}}</td>
+            <td>{{reporte.puntuacionTotal}}</td>
+            <td>{{reporte.totalCantidad}}</td>
+            <td>
+                <button class="button" style="background-color: transparent; border: none; color: rgb(113, 184, 113);"
+                    (click)="EditarReporte_Qera(reporte._id)">
+                    <span class="icon"><i class="fas fa-edit"></i></span>
+                </button>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+}@else {
+<app-loadings />
+}
