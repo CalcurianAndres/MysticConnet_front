@@ -1,28 +1,30 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { productos, reportes, reportesResponse } from '@interfaces/req-respons';
+import { ActivatedRoute, RouterModule } from '@angular/router';
+import { productos, promotoras, reportes, reportesResponse } from '@interfaces/req-respons';
 import { ClientesResponseService } from '@services/clientes-response.service';
 import { LoginService } from '@services/login.service';
 import { PlanificacionService } from '@services/planificacion.service';
 import { ProductosResponseService } from '@services/productos-response.service';
 import { ReportesResponseService } from '@services/reportes-response.service';
+import { UserResponseService } from '@services/user-response.service';
 import { LoadingsComponent } from '@shared/loadings/loadings.component';
 import { TitleComponent } from '@shared/title/title.component';
 
 @Component({
-  selector: 'app-perfil',
-  imports: [TitleComponent, CommonModule, LoadingsComponent, FormsModule],
-  templateUrl: './perfil.component.html',
-  styleUrl: './perfil.component.scss'
+  selector: 'app-promotoras',
+  imports: [CommonModule, TitleComponent, LoadingsComponent, FormsModule, RouterModule],
+  templateUrl: './promotoras.component.html',
+  styleUrl: './promotoras.component.scss'
 })
-export default class PerfilComponent {
-
+export default class PromotorasComponent {
   public login = inject(LoginService);
   public reportes = inject(ReportesResponseService);
   public planificacion = inject(PlanificacionService);
   public clientes = inject(ClientesResponseService);
   public productoService = inject(ProductosResponseService);
+  public promotora = inject(UserResponseService)
 
   public ReportesFiltradosMystic: any = [];
   public ReportesFiltradosQerametik: any = [];
@@ -44,12 +46,26 @@ export default class PerfilComponent {
   public totalCantidadQerametik = 0;
   public totalPuntosQerametik = 0;
 
-  constructor() {
-    this.RefreshPage();
+  public perfil!: any;
+
+  public loading_perfil = false;
+  public loading_clientes = false;
+  public indexPlanificacion: number = 0;
+  public Separado_por_clientes: any = [];
+
+  constructor(private route: ActivatedRoute) {
+    this.route.paramMap.subscribe(params => {
+      const id = params.get('id');
+      setTimeout(() => {
+        this.indexPlanificacion = this.planificacion.planificacion().length - 1;
+        this.loading_perfil = true;
+        this.perfil = this.promotora.users().find((p: any) => p._id === id);
+        this.RefreshPage();
+      }, 1000);
+    });
   }
 
   BuscarCliente(e: any) {
-    console.log(e.value)
     if (e.value.trim() === '') {
       // Si el campo de búsqueda está vacío, mostrar el array vacío
       this.filteredClientes = [];
@@ -70,17 +86,19 @@ export default class PerfilComponent {
   RefreshPage() {
     setTimeout(() => {
       if (!this.planificacion.loading()) {
-        let lastReporte = this.planificacion.planificacion()[this.planificacion.planificacion().length - 1];
+        let lastReporte = this.planificacion.planificacion()[this.indexPlanificacion];
         this.reportes.cargarReportes_(lastReporte.inicio, lastReporte.cierre).subscribe(
           (response) => {
+
             // Filtrar reportes por marca
             this.ReportesFiltradosMystic = response.filter((reporte) =>
-              reporte.promotora._id === this.login.usuario._id &&
-              reporte.productos[0].producto.marca === 'Mystic'
+              reporte.promotora._id === this.perfil._id &&
+              reporte.productos[0]?.producto?.marca === 'Mystic'
             );
+
             this.ReportesFiltradosQerametik = response.filter((reporte) =>
-              reporte.promotora._id === this.login.usuario._id &&
-              reporte.productos[0].producto.marca === 'Qerametik'
+              reporte.promotora._id === this.perfil._id &&
+              reporte.productos[0]?.producto?.marca === 'Qerametik'
             );
 
             // Inicializar acumuladores globales
@@ -133,6 +151,40 @@ export default class PerfilComponent {
               cantidad: this.totalCantidadQerametik,
               puntos: this.totalPuntosQerametik
             });
+
+            this.Separado_por_clientes = this.agruparYCalcularTotales(response.filter((r: any) => r.promotora._id === this.perfil._id))
+
+            this.Separado_por_clientes = Object.entries(this.Separado_por_clientes).map(([nombre, datos]) => {
+              // Verifica si "datos" es un objeto y no es nulo
+              if (typeof datos === 'object' && datos !== null) {
+                const safeDatos = datos as {
+                  cantidadReportes?: number;
+                  totalMystic?: number;
+                  totalProductosVendidos?: number;
+                  totalQerametik?: number;
+                };
+
+                return {
+                  nombre,
+                  cantidadReportes: safeDatos.cantidadReportes || 0,
+                  totalMystic: safeDatos.totalMystic || 0,
+                  totalProductosVendidos: safeDatos.totalProductosVendidos || 0,
+                  totalQerametik: safeDatos.totalQerametik || 0,
+                };
+              }
+
+              // En caso de que "datos" no sea un objeto válido
+              return {
+                nombre,
+                id: 0,
+                cantidadReportes: 0,
+                totalMystic: 0,
+                totalProductosVendidos: 0,
+                totalQerametik: 0,
+              };
+            }).sort((a, b) => b.totalProductosVendidos - a.totalProductosVendidos);  // Ordenar por totalProductosVendidos en orden descendente;
+
+            this.loading_clientes = true;
           }
         );
       }
@@ -196,6 +248,11 @@ export default class PerfilComponent {
     this.ReporteSeleccionado.productos.splice(id, 1);
   }
 
+  cambiar() {
+    this.loading = false;
+    this.RefreshPage();
+  }
+
   GuardarReporte() {
     this.loading = false;
     this.reportes.NuevoReporte(this.formatearReporte(this.ReporteSeleccionado))
@@ -215,5 +272,34 @@ export default class PerfilComponent {
     };
   }
 
+  // Función para agrupar por cliente y calcular totales
+  agruparYCalcularTotales = (reportes: reportesResponse[]) => {
+    return reportes.reduce((acumulador, reporte) => {
+      const clienteId = reporte.cliente.cliente;
 
+      // Si no existe el cliente en el acumulador, lo inicializamos
+      if (!acumulador[clienteId]) {
+        acumulador[clienteId] = {
+          cantidadReportes: 0,
+          totalProductosVendidos: 0,
+          totalMystic: 0,
+          totalQerametik: 0
+        };
+      }
+
+      // Incrementar el contador de reportes
+      acumulador[clienteId].cantidadReportes++;
+
+      // Sumar la cantidad de productos vendidos en este reporte
+      const totalProductos = reporte.productos.reduce((suma, producto) => suma + producto.cantidad, 0);
+      if (reporte.cliente.marca === 'Mystic') {
+        acumulador[clienteId].totalMystic += totalProductos;
+      } else if (reporte.cliente.marca === 'Qerametik') {
+        acumulador[clienteId].totalQerametik += totalProductos;
+      }
+      acumulador[clienteId].totalProductosVendidos += totalProductos;
+
+      return acumulador;
+    }, {} as Record<string, { cantidadReportes: number; totalProductosVendidos: number; totalMystic: number; totalQerametik: number }>);
+  };
 }

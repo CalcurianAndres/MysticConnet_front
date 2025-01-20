@@ -32,115 +32,173 @@
             [value]="simplificar(planificacionService.planificacion()[indexPlanificacion].cierre)" disabled>
     </div>
 </div>
+<hr>
+<span class="title">Mystic</span>
 <table class="table is-fullwidth is-striped">
-    <thead>
+    <thead style="position: sticky; top: 0; background: white; z-index: 1;">
         <tr>
             <th>Promotora</th>
-            <th (click)="ordenarPor('conteoMetaUnidades')">
-                Meta alcanzada
-                {{ ordenActual.ascendente ? '▲' : '▼' }}
-            </th>
-            <th (click)="ordenarPor('productosVendidos')">
-                Productos vendidos
-                {{ ordenActual.ascendente ? '▲' : '▼' }}
-            </th>
-            <th (click)="ordenarPor('puntosAcumulados')">
-                Puntuación
-                {{ ordenActual.ascendente ? '▲' : '▼' }}
-            </th>
+            <th>Marca</th>
+            <th>Región</th>
+            <th>Ventas por impulso</th>
+            <th>Ventas por evento</th>
+            <th>Productos vendidos</th>
+            <th>Puntuación</th>
             <th>Incentivo</th>
-            <th (click)="ordenarPor('totalGastado')">
-                Monto Und. vendidas
-                {{ ordenActual.ascendente ? '▲' : '▼' }}
-            </th>
-            <th>Incidencia</th>
-            <th>Sueldo</th>
-            <th>Sueldo por dia</th>
-            <th>Ventas por dia</th>
-            <th>incidencia</th>
+            <th>Promedio de exito</th>
+            <th>Costo Promedio</th>
+            <th>Monto Und. Vendidas</th>
+            <th>Incidencias</th>
         </tr>
     </thead>
     <tbody>
-        @for (promotora of reportesAgrupadosOrdenados; track $index) {
-
+        @for(productos of datos_Mystic; track $index) {
         <tr>
-            <td>{{promotora.promotora}}</td>
-            <td>{{promotora.conteoMetaUnidades}}
+            <td>{{productos.Promotora}}</td>
+            <td>{{productos.Marca}}</td>
+            <td>{{productos.Region}}</td>
+            <td>{{productos['Total ventas de impulso'] | number:'1.0-0'}} ({{productos['Dias impulso']}} dias)</td>
+            <td>{{productos['Total ventas de evento'] | number:'1.0-0'}} ({{productos['Dias evento']}} dias)</td>
+            <td>{{productos['Productos vendidos'] | number:'1.0-0'}}</td>
+            <td>{{productos['Puntuación'] | number:'1.1-1'}}</td>
+            <td>{{productos.Incentivo | currency:'USD'}}</td>
+            <td>
+                @if(calcularPorcentaje(productos['Metas alcanzadas'], productos['Dias trabajados']) >= 60){
+                <span class="tag is-success">{{calcularPorcentaje(productos["Metas alcanzadas"],
+                    productos["Dias trabajados"]) | number:'1.2-2'}}%</span>
+                } @else if (calcularPorcentaje(productos['Metas alcanzadas'], productos['Dias trabajados']) >= 30) {
+                <span class="tag is-warning">{{calcularPorcentaje(productos['Metas alcanzadas'],
+                    productos['Dias trabajados']) | number:'1.2-2'}}%</span>
+                }@else {
+                <span class="tag is-danger">{{calcularPorcentaje(productos['Metas alcanzadas'],
+                    productos['Dias trabajados']) | number:'1.2-2'}}%</span>
+                }
             </td>
-            <td style="width: 200px;">{{promotora.productosVendidos}}
-                <br>{{promotora.productosMystic}} Mystic
-                <br>{{promotora.productosQerametik}} Qerametik
-            </td>
-            <td style="width: 200px;">
-                {{promotora.puntosAcumulados}}
-                <br>{{promotora.puntosMystic}} Mystic
-                <br>{{promotora.puntosQerametik}} Qerametik
-            </td>
-            <td style="width: 200px;">{{obtenerIncentivos(promotora.puntosMystic,
-                promotora.puntosQerametik).totales|
-                currency:'USD'}}
-                <br>
-                <span *ngIf="obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).mystic > 0">
-                    Mystic: {{obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).mystic |
-                    currency:'USD'}} </span>
-                <br>
-                <span *ngIf="obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).qerametik > 0">
-                    Qerametik: {{obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).qerametik |
-                    currency:'USD'}} </span>
-            </td>
-            <td>{{promotora.totalGastado | currency:'USD'}}</td>
-            <td>{{(obtenerIncentivo(promotora.puntosAcumulados,
-                planificacionService.planificacion()[indexPlanificacion].incentivos) / promotora.totalGastado) * 100 |
-                number:'1.2-2'}}%</td>
-            <td>{{BuscarInfo(promotora.promotora)?.sueldo}}</td>
-            <td>{{puntos(BuscarInfo(promotora.promotora)?.sueldo) / promotora.reportes.length | currency:'USD'}}</td>
-            <td>{{promotora.totalGastado / promotora.reportes.length | currency:'USD'}}</td>
-            <td>{{(puntos(BuscarInfo(promotora.promotora)?.sueldo) / promotora.reportes.length) /
-                (promotora.totalGastado / promotora.reportes.length) * 100 | number:'1.2-2'}}%</td>
+            <td>{{productos['Costo promedio'] | currency:'USD'}}</td>
+            <td>{{productos['Monto de Und. Vendidas'] | currency:'USD'}}</td>
+            <td>{{productos.Incidencia | number:'1.2-2'}}%</td>
         </tr>
-
+        }@empty {
+        <tr>
+            <td colspan="10">No hay datos</td>
+        </tr>
         }
     </tbody>
-    <tfoot>
+</table>
+<hr>
+<span class="title">Qerametik</span>
+<table class="table is-fullwidth is-striped">
+    <thead style="position: sticky; top: 0; background: white; z-index: 1;">
         <tr>
-            <td>Total</td>
-            <td>{{ getTotal('conteoMetaUnidades') }}</td>
-            <td>{{ getTotal('productosVendidos') }}</td>
-            <td>{{ getTotal('puntosAcumulados') }}</td>
-            <td>-</td>
-            <td>{{ getTotal('totalGastado') | currency:'USD' }}</td>
-            <!-- Agrega más celdas si es necesario -->
+            <th>Promotora</th>
+            <th>Marca</th>
+            <th>Región</th>
+            <th>Ventas por impulso</th>
+            <th>Ventas por evento</th>
+            <th>Productos vendidos</th>
+            <th>Puntuación</th>
+            <th>Incentivo</th>
+            <th>Promedio de exito</th>
+            <th>Costo Promedio</th>
+            <th>Monto Und. Vendidas</th>
+            <th>Incidencias</th>
         </tr>
-    </tfoot>
+    </thead>
+    <tbody>
+        @for(productos of datos_Qerametik; track $index) {
+        <tr>
+            <td>{{productos.Promotora}}</td>
+            <td>{{productos.Marca}}</td>
+            <td>{{productos.Region}}</td>
+            <td>{{productos['Total ventas de impulso'] | number:'1.0-0'}} ({{productos['Dias impulso']}} dias)</td>
+            <td>{{productos['Total ventas de evento'] | number:'1.0-0'}} ({{productos['Dias evento']}} dias)</td>
+            <td>{{productos['Productos vendidos'] | number:'1.0-0'}}</td>
+            <td>{{productos['Puntuación'] | number:'1.1-1'}}</td>
+            <td>{{productos.Incentivo | currency:'USD'}}</td>
+            <td>
+                @if(calcularPorcentaje(productos['Metas alcanzadas'], productos['Dias trabajados']) >= 60){
+                <span class="tag is-success">{{calcularPorcentaje(productos["Metas alcanzadas"],
+                    productos["Dias trabajados"]) | number:'1.2-2'}}%</span>
+                } @else if (calcularPorcentaje(productos['Metas alcanzadas'], productos['Dias trabajados']) >= 30) {
+                <span class="tag is-warning">{{calcularPorcentaje(productos['Metas alcanzadas'],
+                    productos['Dias trabajados']) | number:'1.2-2'}}%</span>
+                }@else {
+                <span class="tag is-danger">{{calcularPorcentaje(productos['Metas alcanzadas'],
+                    productos['Dias trabajados']) | number:'1.2-2'}}%</span>
+                }
+            </td>
+            <td>{{productos['Costo promedio'] | currency:'USD'}}</td>
+            <td>{{productos['Monto de Und. Vendidas'] | currency:'USD'}}</td>
+            <td>{{productos.Incidencia | number:'1.2-2'}}%</td>
+        </tr>
+        }@empty {
+        <tr>
+            <td colspan="10">No hay datos</td>
+        </tr>
+        }
+    </tbody>
 </table>
 
 <button (click)="exportarExcel()" class="button is-primary">
     Exportar a Excel
 </button>
 <br><br>
-<span class="title">Clientes</span>
-<hr>
 
 <div class="columns">
-    <div class="column">
+    <div class="column" style="max-height: 100vh; overflow: scroll;">
         <table class="table is-fullwidth is-striped">
-            <thead>
+            <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+                <tr>
+                    <td colspan="2">
+                        <span class="title" style="width: 100%; display: block;">Mystic</span>
+                        <hr>
+                    </td>
+                </tr>
                 <tr>
                     <th>Cliente</th>
                     <th>Total Productos Vendidos</th>
                 </tr>
             </thead>
             <tbody>
-                @for (cliente of clientesConProductos; track $index) {
+                @for (cliente of clientesMystic; track $index) {
                 <tr>
-                    <td>{{ cliente.cliente }}</td>
+                    <td> <a [routerLink]="['/dashboard/cliente',cliente.cliente]">{{ cliente.cliente }}</a></td>
                     <td>{{ cliente.totalProductos }}</td>
                 </tr>
                 }
             </tbody>
         </table>
     </div>
+    <div class="column" style="max-height: 100vh; overflow: scroll;">
+        <table class="table is-fullwidth is-striped">
+            <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+                <tr>
+                    <td colspan="2">
+                        <span class="title" style="width: 100%; display: block;">Qerametik</span>
+                        <hr>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Total Productos Vendidos</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (cliente of clientesQerametik; track $index) {
+                <tr>
+                    <td> <a [routerLink]="['/dashboard/cliente',cliente.cliente]">{{ cliente.cliente }}</a></td>
+                    <td>{{ cliente.totalProductos }}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="columns">
     <div class="column">
+        <span class="title">Mystic</span>
+        <hr>
         <table class="table is-fullwidth is-striped">
             <thead>
                 <tr>
@@ -149,7 +207,27 @@
                 </tr>
             </thead>
             <tbody>
-                @for (zona of ventasPorZona; track $index) {
+                @for (zona of ventasPorZonaMystic; track $index) {
+                <tr>
+                    <td>{{ zona.zona }}</td>
+                    <td>{{ zona.totalProductos }}</td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="column">
+        <span class="title">Qerametik</span>
+        <hr>
+        <table class="table is-fullwidth is-striped">
+            <thead>
+                <tr>
+                    <th>Zona</th>
+                    <th>Total Productos Vendidos</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (zona of ventasPorZonaQerametik; track $index) {
                 <tr>
                     <td>{{ zona.zona }}</td>
                     <td>{{ zona.totalProductos }}</td>

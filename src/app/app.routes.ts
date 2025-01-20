@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '@auth/auth.guard';
+import { RenderMode, ServerRoute } from '@angular/ssr';
 
 export const routes: Routes = [
     {
@@ -16,6 +17,21 @@ export const routes: Routes = [
                 path: 'perfil',
                 title: 'Perfil',
                 loadComponent: () => import('./dashboard/pages/perfil/perfil.component')
+            },
+            {
+                path: 'promotora/:id',
+                title: 'Promotora',
+                loadComponent: () => import('./dashboard/pages/promotoras/promotoras.component')
+            },
+            {
+                path: 'cliente/:id',
+                title: 'Cliente',
+                loadComponent: () => import('./dashboard/pages/clientes/clientes.component')
+            },
+            {
+                path: 'detalle/:id',
+                title: 'Detalle',
+                loadComponent: () => import('./dashboard/pages/detalle/detalle.component')
             },
             {
                 path: 'reportes',

@@ -17,7 +17,7 @@
                     <tr>
                         <td><i class="fas fa-plus" style="color: rgb(100, 180, 100);cursor: pointer;"
                                 (click)="addCliente(cliente)"></i></td>
-                        <td>{{cliente.cliente}}</td>
+                        <td>{{cliente.cliente}} ({{cliente.marca}})</td>
                     </tr>
                     }
                 </tbody>
@@ -101,7 +101,7 @@
             </table>
 
             <hr>
-            @for(producto of ReporteSeleccionado.productos; track $index) {
+            @for(producto of ReporteSeleccionado.productos; track $index;let i = $index) {
             <div class="card">
                 <div class="card-head">
                     <p class="card-header-title">{{producto.producto.producto}}</p>
@@ -129,7 +129,7 @@
                             </tr>
                         </tbody>
                     </table>
-                    <button class="button is-danger is-small" (click)=" EliminarProducto($index)">
+                    <button class="button is-danger is-small" (click)=" EliminarProducto(i)">
                         <span class="icon"><i class="far fa-trash-alt"></i></span>
                         <span>Eliminar</span>
                     </button>
@@ -163,7 +163,7 @@
         <th>Fecha</th>
         <th>Puntuacion obtenida</th>
         <th>Productos vendidos</th>
-        <th>Editar</th>
+        <!-- <th>Editar</th> -->
     </thead>
     <tbody>
         @for(reporte of ReportesFiltradosMystic; track $index){
@@ -171,12 +171,12 @@
             <td>{{reporte.fecha | date:'dd/MM/YYYY'}}</td>
             <td>{{reporte.puntuacionTotal}}</td>
             <td>{{reporte.totalCantidad}}</td>
-            <td>
+            <!-- <td>
                 <button class="button" style="background-color: transparent; border: none; color: rgb(113, 184, 113);"
                     (click)="EditarReporte_Mystic(reporte._id)">
                     <span class="icon"><i class="fas fa-edit"></i></span>
                 </button>
-            </td>
+            </td> -->
         </tr>
         }
     </tbody>
@@ -196,7 +196,7 @@
         <th>Fecha</th>
         <th>Puntuacion obtenida</th>
         <th>Productos vendidos</th>
-        <th>Editar</th>
+        <!-- <th>Editar</th> -->
     </thead>
     <tbody>
         @for(reporte of ReportesFiltradosQerametik; track $index){
@@ -204,12 +204,12 @@
             <td>{{reporte.fecha | date:'dd/MM/YYYY'}}</td>
             <td>{{reporte.puntuacionTotal}}</td>
             <td>{{reporte.totalCantidad}}</td>
-            <td>
+            <!-- <td>
                 <button class="button" style="background-color: transparent; border: none; color: rgb(113, 184, 113);"
                     (click)="EditarReporte_Qera(reporte._id)">
                     <span class="icon"><i class="fas fa-edit"></i></span>
                 </button>
-            </td>
+            </td> -->
         </tr>
         }
     </tbody>

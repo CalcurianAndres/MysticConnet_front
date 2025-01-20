@@ -4,6 +4,8 @@
     @if(servicePlanificacion.loading()){
     <app-loadings></app-loadings>
     } @else {
+    @if(login.usuario.role != 'Ejecutiva'){
+
     <span class="title">Plan mensual</span>
     <hr>
     <div class="field is-grouped">
@@ -179,13 +181,41 @@
 
     <br>
     }
+    }
 </div>
 
-<hr>
+<br>
 
-<span class="title">planificacion por semana</span>
+<span class="title">Planificación por semana</span>
 
-@if(semanas.length > 0){
+<br> <br>
+
+<div class="field">
+    <div class="control">
+        <label for="" class="label">Selecciona región</label>
+        <div class="select">
+            <select [(ngModel)]="Region">
+                <option value="Barcelona">Barcelona</option>
+                <option value="Barquisimeto">Barquisimeto</option>
+                <option value="Cumana">Cumana</option>
+                <option value="Gran Caracas">Gran Caracas</option>
+                <option value="Guaira">Guaira</option>
+                <option value="Guarenas">Guarenas</option>
+                <option value="Maracay">Maracay</option>
+                <option value="Maracaibo">Maracaibo</option>
+                <option value="Merida">Merida</option>
+                <option value="Puerto Ordaz">Puerto Ordaz</option>
+                <option value="Pto. Ordaz">Pto. Ordaz</option>
+                <option value="Tachira">Tachira</option>
+                <option value="Valencia">Valencia</option>
+                <option value="Valera">Valera</option>
+
+            </select>
+        </div>
+    </div>
+</div>
+<br> <br>
+
 <div class="tabs">
     <ul>
         @for (semanas of semanas; track $index; let i = $index) {
@@ -196,8 +226,82 @@
     </ul>
 </div>
 
+@for (promotora of FiltroPorRegion(); track $index) {
+<div class="card">
+    <div class="card-header">
+        <p class="card-header-title">{{promotora.nombre}} {{promotora.apellido}}</p>
+    </div>
+    <div class="card-content">
+        <table class="table is-fullwidth is-striped">
+            <thead>
+                <tr>
+                    @for(dia of semanas[semana_selected]; track $index; let k = $index){
+                    <th style="text-align: center;">
+                        {{dia.dia}} <br>
+                        {{ dia.fecha | date: 'dd/MM' }}
+                    </th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    @for(dia of semanas[semana_selected]; track $index; let k = $index){
+                    <td style="text-align: center;">
+                        @if(!existe(dia.fecha, promotora.nombre) ){
+                        <button class="button is-success is-small" (click)="generarPlan(promotora.nombre, dia.fecha)">
+                            <span class="icon"><i class="fas fa-plus"></i></span>
+                        </button>
+                        }@else {
 
-<table class="table is-fullwidth is-striped">
+                        <span class="icon info-icon" (click)="togglePopup(dia.fecha, promotora.nombre)">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <span class="icon edit-icon" (click)="editarPlan(dia.fecha, promotora.nombre)">
+                            <i class="fas fa-edit"></i>
+                        </span>
+
+                        <!-- Popup -->
+                        <div class="popup" [class.show]="isPopupOpen(dia.fecha, promotora.nombre)">
+                            <div class="popup-content">
+                                <p><strong>Tipo:</strong> {{ planification(dia.fecha, promotora.nombre).tipo }}</p>
+                                <p><strong>Cliente:</strong> {{ planification(dia.fecha,
+                                    promotora.nombre).cliente_nombre }}</p>
+                                <button class="button is-small is-danger" (click)="cerrarPopup()">Cerrar</button>
+                            </div>
+                        </div>
+                        }
+                    </td>
+                    }
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+}
+
+<!-- <table class="table is-fullwidth is-striped">
+    <thead>
+        <tr>
+            <th>Promotora</th>
+            <th>Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (promotora of FiltroPorRegion(); track $index) {
+        <tr>
+            <th>{{promotora.nombre}} {{promotora.apellido}}</th>
+            <th>
+                @for(dia of semanas[semana_selected]; track $index; let k = $index){
+                <span>{{dia.dia}} </span>
+                }
+            </th>
+        </tr>
+        }
+    </tbody>
+</table> -->
+
+
+<!-- <table class="table is-fullwidth is-striped">
     @for(empleada of promotoras.users(); track $index;let a = $index){
     <thead>
         <tr>
@@ -240,7 +344,7 @@
 }@else {
 <br>
 Aun no hay planificación semanal
-}
+} -->
 
 <br>
 <button class="button is-success" (click)=" crearPlanificacion()">

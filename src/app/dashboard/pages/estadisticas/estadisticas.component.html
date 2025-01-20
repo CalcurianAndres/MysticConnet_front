@@ -78,9 +78,10 @@
     <header class="card-header">
         <p class="card-header-title">
             <span *ngIf="noHuboReporteAyer(promotora.nombre, promotora.apellido)" class="punto-rojo"></span> 
-            {{promotora.nombre}} {{promotora.apellido}} ({{getPuntos(promotora.nombre, promotora.apellido) || 0}}
-            puntos -
-            {{obtenerIncentivo(promotora.nombre, promotora.apellido).totales | currency:'USD'}} Incentivo)
+            <a [routerLink]="['/dashboard/promotora',promotora._id]">{{promotora.nombre}}
+                {{promotora.apellido}}</a> {{getPuntos(promotora.nombre, promotora.apellido)
+            || 0}}
+            puntos
             -
             {{buscarDiasTrabajados(promotora.nombre, promotora.apellido) | number}} dia(s) trabajado(s)
         </p>
@@ -95,27 +96,11 @@
         <table class="table is-fullwidth">
             <tr>
                 <th>Vendido</th>
-                <th>Sueldo</th>
                 <th>Incentivo</th>
-                <th>Incidencia</th>
             </tr>
             <tr>
-                <td>{{ getGastado(promotora.nombre, promotora.apellido) || 0 | currency:'USD' }}</td>
-                <td>{{sueldodiario(promotora.sueldo, buscarDiasTrabajados(promotora.nombre, promotora.apellido)) |
-                    currency:'USD'}}</td>
+                <td>{{ getGastado(promotora.nombre, promotora.apellido)}} productos</td>
                 <td>{{obtenerIncentivo(promotora.nombre, promotora.apellido).totales | currency:'USD'}}
-                </td>
-                <!-- <td [ngClass]="{'low': ((puntos(promotora.sueldo) +
-                obtenerIncentivo(puntos(getPuntos(promotora.nombre, promotora.apellido)),
-                planificacionService.planificacion()[indexPlanificacion].incentivos)) * 100
-                / getGastado(promotora.nombre, promotora.apellido) || 0) >= 40}">
-                    {{
-                    ((puntos(promotora.sueldo) +
-                    obtenerIncentivo(puntos(getPuntos(promotora.nombre, promotora.apellido)),
-                    planificacionService.planificacion()[indexPlanificacion].incentivos)) * 100
-                    / getGastado(promotora.nombre, promotora.apellido) || 0) | number: '1.0-1'
-                    }}%
-                </td> -->
             </tr>
         </table>
         @for(fecha of getFechasDelRango(); track $index; let j = $index){
@@ -129,14 +114,15 @@
                         } @else {
                         @for(reporte of getReportesPorFecha(promotora.nombre,
                         promotora.apellido, fecha); track $index){
-                    <div>  ({{reporte.marca}}) 
-                        {{reporte.totalSubtotal | currency:'USD'}} ({{reporte.totalPuntos}} Puntos)
+                        @if(reporte.productos[0]){
+                    <div>  ({{reporte.productos[0].marca}}) 
+                        {{reporte.totalSubtotal}} productos ({{reporte.totalPuntos}} Puntos)
 
                         @if(promotora.fija){
 
                         @if(reporte.tipo === 'Impulso'){
 
-                        @if(reporte.marca === 'Mystic'){
+                        @if(reporte.productos[0].marca === 'Mystic'){
 
                         @if(puntos(reporte.totalPuntos) >=
                         planificacionService.planificacion()[indexPlanificacion].metas.tradicional.mystic.impulso){
@@ -153,7 +139,7 @@
                         }
                         }
                         } @else {
-                        @if(reporte.marca === 'Mystic'){
+                        @if(reporte.productos[0].marca === 'Mystic'){
 
                         @if(puntos(reporte.totalPuntos) >=
                         planificacionService.planificacion()[indexPlanificacion].metas.tradicional.mystic.evento){
@@ -173,7 +159,7 @@
                         } @else {
                         @if(reporte.tipo === 'Impulso'){
 
-                        @if(reporte.marca === 'Mystic'){
+                        @if(reporte.productos[0].marca === 'Mystic'){
 
                         @if(puntos(reporte.totalPuntos) >=
                         planificacionService.planificacion()[indexPlanificacion].metas.rebranding.mystic.impulso){
@@ -190,7 +176,7 @@
                         }
                         }
                         } @else {
-                        @if(reporte.marca === 'Mystic'){
+                        @if(reporte.productos[0].marca === 'Mystic'){
 
                         @if(puntos(reporte.totalPuntos) >=
                         planificacionService.planificacion()[indexPlanificacion].metas.rebranding.mystic.evento){
@@ -209,6 +195,9 @@
                         }
                         }
                     </div> 
+                    } @else {
+                    Falta justificada
+                    }
                     }
 
 
@@ -227,7 +216,11 @@
                     [ngClass]="{'oculto': !toggleVentas[i] || !toggleVentas[i][j], 'activo': toggleVentas[i] && toggleVentas[i][j]}">
                     <b>Establecimiento:</b> {{reporte.cliente}} <br>
                     <b>Tipo:</b> {{reporte.tipo}} <br>
-                    <b>Marca:</b> {{reporte.marca}} <br>
+                    <b>Marca:</b>
+                    @if(reporte.productos[0]){
+                    {{reporte.productos[0].marca}}
+                    }
+                    <br>
                     <b>Observación:</b> {{reporte.observacion}}
                     <hr>
                     <table class="table is-fullwidth is-striped"
@@ -237,9 +230,10 @@
                                 <th>Linea</th>
                                 <th>Marca</th>
                                 <th>Producto</th>
+                                <th>Inicio</th>
+                                <th>Final</th>
                                 <th>Cantidad (Und)</th>
                                 <th>Puntos</th>
-                                <th>Subtotal (USD)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -248,9 +242,10 @@
                                 <td>{{productos.linea}}</td>
                                 <td>{{productos.marca}}</td>
                                 <td>{{productos.producto}}</td>
+                                <td>{{productos.inicio}}</td>
+                                <td>{{productos.final}}</td>
                                 <td>{{productos.cantidad}}</td>
                                 <td>{{productos.puntosTotales}}</td>
-                                <td>{{productos.subtotal | currency:'USD'}}</td>
                             </tr>
                             }
                         </tbody>

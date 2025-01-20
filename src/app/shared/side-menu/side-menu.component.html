@@ -51,15 +51,15 @@
       </a>
 
       <div class="navbar-dropdown">
+        @if(LoginService.usuario.role != 'coordinadora' && LoginService.usuario.role != 'Ejecutiva'){
         <a class="navbar-item" routerLink="administracion">
           Administración
         </a>
-        @if(LoginService.usuario.role != 'coordinadora'){
         <a class="navbar-item" routerLink="estadisticas">
           Estadísticas
         </a>
         }
-        @if(LoginService.usuario.role === 'coordinadora'){
+        @if(LoginService.usuario.role === 'coordinadora' || LoginService.usuario.role === 'Ejecutiva'){
         <a class="navbar-item" routerLink="planificacion">
           Planificación
         </a>

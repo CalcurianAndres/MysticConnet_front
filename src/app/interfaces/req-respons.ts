@@ -5,9 +5,10 @@ export interface promotoras {
     region: string;
     telefono: string;
     sueldo: string;
-    role: 'Admin' | 'Promotora' | 'coordinadora';
+    role: 'Admin' | 'Promotora' | 'coordinadora' | 'Ejecutiva';
     restringido: boolean;
     fija: boolean;
+    marca: string;
     estado?: 'habilitada' | 'inhabilitada';
     borrado?: boolean;
     foto?: string;
@@ -79,14 +80,26 @@ export interface arrayProductos {
 
 export interface ReporteAgrupado {
     promotora: string; // Nombre completo de la promotora
+    marca: string; // Nombre completo de la promotora
+    region: string;
     puntosAcumulados: number; // Total de puntos acumulados
     totalGastado: number; // Total del dinero gastado
     productosVendidos: number;
     conteoMetaUnidades: number,
+    conteoMetaUnidadesQ: number,
     productosMystic: number,
     productosQerametik: number,
     puntosMystic: number,
     puntosQerametik: number,
+    gastosPorMarca: any,
+    totalImpulsos: number, // Inicializamos el contador de impulsos
+    totalEventos: number, // Inicializamos el contador de eventos
+    totalImpulsos_qerametik: number, // Inicializamos el contador de impulsos
+    totalEventos_qerametik: number, // Inicializamos el contador de eventos
+    dias_impulto_mystic: any,
+    dias_evento_mystic: any,
+    dias_impulso_qerametik: any,
+    dias_evento_qerametik: any,
     reportes: ReporteSimplificado[]; // Lista de reportes asociados
 }
 
@@ -106,6 +119,8 @@ export interface ProductoSimplificado {
     linea: string; // Nombre del producto
     marca: string; // Marca del producto
     cantidad: number; // Cantidad de productos reportados
+    inicio: number; // Cantidad de productos reportados
+    final: number; // Cantidad de productos reportados
     subtotal: number; // Subtotal calculado (precio * cantidad)
     puntosTotales: number; // Subtotal calculado (precio * cantidad)
 }

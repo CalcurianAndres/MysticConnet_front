@@ -30,7 +30,6 @@ export class ReportesResponseService {
   // public ruta = 'http://localhost:8080/api'
 
   constructor() {
-    this.cargarReportes();
   }
 
   cargarReportes() {
@@ -47,6 +46,10 @@ export class ReportesResponseService {
     return this.http.get<reportesResponse[]>(`${this.ruta}/reportes?inicio=${inicio}&fin=${fin}`)
   }
 
+  BuscarPorID(id: any) {
+    return this.http.get(`${this.ruta}/reportes/${id}`)
+  }
+
   getReportesAgrupados_(tipoPromotora: boolean, inicio: string, fin: string): Observable<ReporteAgrupado[]> {
     return this.http.get<reportesResponse[]>(`${this.ruta}/reportes?inicio=${inicio}&fin=${fin}`).pipe(
       map((reportes) => {
@@ -59,7 +62,6 @@ export class ReportesResponseService {
           }
 
           // Filtrar por tipo de promotora
-          console.log(reporte.promotora.fija, tipoPromotora)
           if (reporte.promotora.fija !== tipoPromotora) {
             console.warn('reportes que no coincidan con el tipoPromotora:', reporte);
             return result; // Ignorar reportes que no coincidan con el tipoPromotora
@@ -68,17 +70,38 @@ export class ReportesResponseService {
           if (!result[promotoraId]) {
             result[promotoraId] = {
               promotora: `${reporte.promotora.nombre} ${reporte.promotora.apellido}`,
+              marca: reporte.promotora.marca,
+              region: reporte.promotora.region,
               puntosAcumulados: 0,
               totalGastado: 0,
               productosVendidos: 0,
               conteoMetaUnidades: 0,
+              conteoMetaUnidadesQ: 0,
               productosMystic: 0,
               productosQerametik: 0,
               puntosMystic: 0,
               puntosQerametik: 0,
+              totalImpulsos: 0, // Inicializamos el contador de impulsos
+              totalEventos: 0, // Inicializamos el contador de eventos
+              totalImpulsos_qerametik: 0, // Inicializamos el contador de impulsos
+              totalEventos_qerametik: 0, // Inicializamos el contador de eventos
+              dias_impulto_mystic: 0,
+              dias_evento_mystic: 0,
+              dias_impulso_qerametik: 0,
+              dias_evento_qerametik: 0,
+              gastosPorMarca: { Mystic: 0, Qerametik: 0 },
               reportes: [],
             } as ReporteAgrupado;
           }
+
+          // Acumular gastos por marca
+          reporte.productos.forEach((prod) => {
+            const marca = prod.producto.marca;
+            if (!result[promotoraId].gastosPorMarca[marca]) {
+              result[promotoraId].gastosPorMarca[marca] = 0;
+            }
+            result[promotoraId].gastosPorMarca[marca] += prod.producto.precio * prod.cantidad;
+          });
 
           // Acumulación de puntos, productos y cálculo de metas
           const puntosReporte = reporte.productos.reduce(
@@ -86,14 +109,6 @@ export class ReportesResponseService {
             0
           );
 
-          if (reporte.promotora.correo === 'usuario') {
-            console.log(
-              reporte.productos.reduce(
-                (suma, prod) => suma + prod.producto.precio * prod.cantidad,
-                0
-              )
-            )
-          }
           const precioReporte = reporte.productos.reduce(
             (suma, prod) => suma + prod.producto.precio * prod.cantidad,
             0
@@ -114,54 +129,68 @@ export class ReportesResponseService {
             if (prod.producto.marca === 'Mystic') {
               result[promotoraId].productosMystic += prod.cantidad;
               result[promotoraId].puntosMystic += prod.producto.puntos * prod.cantidad;
+              if (reporte.tipo === 'Impulso') {
+                result[promotoraId].totalImpulsos += prod.cantidad;
+              } else if (reporte.tipo === 'Evento') {
+                result[promotoraId].totalEventos += prod.cantidad;
+              }
             } else if (prod.producto.marca === 'Qerametik') {
               result[promotoraId].productosQerametik += prod.cantidad;
               result[promotoraId].puntosQerametik += prod.producto.puntos * prod.cantidad;
+              if (reporte.tipo === 'Impulso') {
+                result[promotoraId].totalImpulsos_qerametik += prod.cantidad;
+              } else if (reporte.tipo === 'Evento') {
+                result[promotoraId].totalEventos_qerametik += prod.cantidad;
+              }
             }
           });
 
+          // Incrementar contadores de tipo
+
           // Verificar si la promotora alcanzó la meta de 30 unidades en este reporte
-          if (reporte.promotora.fija === true) {
-            if (reporte.tipo === 'Impulso') {
-              if (reporte.productos[0].producto.marca === 'Mystic') {
-                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.tradicional.mystic.impulso) {
-                  result[promotoraId].conteoMetaUnidades += 1;
+          if (reporte.productos[0]) {
+            if (reporte.promotora.fija === true) {
+              if (reporte.tipo === 'Impulso') {
+                if (reporte.productos[0].producto.marca === 'Mystic') {
+                  if (puntosReporte >= this.planificacionService.planificacion()[1].metas.tradicional.mystic.impulso) {
+                    result[promotoraId].conteoMetaUnidades += 1;
+                  }
+                } else {
+                  if (puntosReporte >= this.planificacionService.planificacion()[1].metas.tradicional.qerametik.impulso) {
+                    result[promotoraId].conteoMetaUnidadesQ += 1;
+                  }
                 }
               } else {
-                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.tradicional.qerametik.impulso) {
-                  result[promotoraId].conteoMetaUnidades += 1;
+                if (reporte.productos[0].producto.marca === 'Mystic') {
+                  if (puntosReporte >= this.planificacionService.planificacion()[1].metas.tradicional.mystic.evento) {
+                    result[promotoraId].conteoMetaUnidades += 1;
+                  }
+                } else {
+                  if (puntosReporte >= this.planificacionService.planificacion()[1].metas.tradicional.qerametik.evento) {
+                    result[promotoraId].conteoMetaUnidadesQ += 1;
+                  }
                 }
               }
             } else {
-              if (reporte.productos[0].producto.marca === 'Mystic') {
-                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.tradicional.mystic.evento) {
-                  result[promotoraId].conteoMetaUnidades += 1;
+              if (reporte.tipo === 'Impulso') {
+                if (reporte.productos[0].producto.marca === 'Mystic') {
+                  if (puntosReporte >= this.planificacionService.planificacion()[1].metas.rebranding.mystic.impulso) {
+                    result[promotoraId].conteoMetaUnidades += 1;
+                  }
+                } else {
+                  if (puntosReporte >= this.planificacionService.planificacion()[1].metas.rebranding.qerametik.impulso) {
+                    result[promotoraId].conteoMetaUnidadesQ += 1;
+                  }
                 }
               } else {
-                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.tradicional.qerametik.evento) {
-                  result[promotoraId].conteoMetaUnidades += 1;
-                }
-              }
-            }
-          } else {
-            if (reporte.tipo === 'Impulso') {
-              if (reporte.productos[0].producto.marca === 'Mystic') {
-                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.rebranding.mystic.impulso) {
-                  result[promotoraId].conteoMetaUnidades += 1;
-                }
-              } else {
-                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.rebranding.qerametik.impulso) {
-                  result[promotoraId].conteoMetaUnidades += 1;
-                }
-              }
-            } else {
-              if (reporte.productos[0].producto.marca === 'Mystic') {
-                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.rebranding.mystic.evento) {
-                  result[promotoraId].conteoMetaUnidades += 1;
-                }
-              } else {
-                if (puntosReporte >= this.planificacionService.planificacion()[1].metas.rebranding.qerametik.evento) {
-                  result[promotoraId].conteoMetaUnidades += 1;
+                if (reporte.productos[0].producto.marca === 'Mystic') {
+                  if (puntosReporte >= this.planificacionService.planificacion()[1].metas.rebranding.mystic.evento) {
+                    result[promotoraId].conteoMetaUnidades += 1;
+                  }
+                } else {
+                  if (puntosReporte >= this.planificacionService.planificacion()[1].metas.rebranding.qerametik.evento) {
+                    result[promotoraId].conteoMetaUnidadesQ += 1;
+                  }
                 }
               }
             }
@@ -181,6 +210,8 @@ export class ReportesResponseService {
               linea: prod.producto.linea,
               marca: prod.producto.marca,
               cantidad: prod.cantidad,
+              inicio: prod.inicio,
+              final: prod.final,
               subtotal: prod.producto.precio * prod.cantidad,
               puntosTotales: prod.producto.puntos * prod.cantidad,
             })),
@@ -209,7 +240,6 @@ export class ReportesResponseService {
           }
 
           // Filtrar por tipo de promotora
-          console.log(reporte.promotora.fija, tipoPromotora)
           if (reporte.promotora.fija !== tipoPromotora) {
             console.warn('reportes que no coincidan con el tipoPromotora:', reporte);
             return result; // Ignorar reportes que no coincidan con el tipoPromotora
@@ -218,14 +248,26 @@ export class ReportesResponseService {
           if (!result[promotoraId]) {
             result[promotoraId] = {
               promotora: `${reporte.promotora.nombre} ${reporte.promotora.apellido}`,
+              marca: reporte.promotora.marca,
+              region: reporte.promotora.region,
               puntosAcumulados: 0,
               totalGastado: 0,
               productosVendidos: 0,
               conteoMetaUnidades: 0,
+              conteoMetaUnidadesQ: 0,
               productosMystic: 0,
               productosQerametik: 0,
               puntosMystic: 0,
               puntosQerametik: 0,
+              totalImpulsos: 0, // Inicializamos el contador de impulsos
+              totalEventos: 0, // Inicializamos el contador de eventos
+              totalImpulsos_qerametik: 0, // Inicializamos el contador de impulsos
+              totalEventos_qerametik: 0, // Inicializamos el contador de eventos
+              dias_impulto_mystic: 0,
+              dias_evento_mystic: 0,
+              dias_impulso_qerametik: 0,
+              dias_evento_qerametik: 0,
+              gastosPorMarca: { Mystic: 0, Qerametik: 0 },
               reportes: [],
             } as ReporteAgrupado;
           }
@@ -270,6 +312,8 @@ export class ReportesResponseService {
               linea: prod.producto.linea,
               marca: prod.producto.marca,
               cantidad: prod.cantidad,
+              inicio: prod.inicio,
+              final: prod.final,
               subtotal: prod.producto.precio * prod.cantidad,
               puntosTotales: prod.producto.puntos * prod.cantidad,
             })),

@@ -8,6 +8,8 @@ import { UserResponseService } from '@services/user-response.service';
 import { LoadingsComponent } from '@shared/loadings/loadings.component';
 import { NewPlanificacionComponent } from "./new-planificacion/new-planificacion.component";
 import Swal from 'sweetalert2';
+import { LoginService } from '@services/login.service';
+import { ReportesResponseService } from '@services/reportes-response.service';
 
 @Component({
   selector: 'app-planificacion',
@@ -21,10 +23,14 @@ export default class PlanificacionComponent {
   public servicePlanificacion = inject(PlanificacionService)
   public promotoras = inject(UserResponseService)
   public clientes = inject(ClientesResponseService)
+  public login = inject(LoginService)
+  public reportes = inject(ReportesResponseService)
+
   public aprobado: boolean[] = [];
   _aprobados_: { [key: number]: boolean[] } = {};
   public newPlanificacion: boolean = false;
   public indexPlanificacion: any = 0;
+  public Region = ''
 
   @Input() active!: boolean;
   @Output() onCloseModal = new EventEmitter();
@@ -82,6 +88,7 @@ export default class PlanificacionComponent {
   constructor() {
     setTimeout(() => {
       if (this.servicePlanificacion.planificacion().length > 0) {
+        this.Region = this.login.usuario.region;
         this.data = this.servicePlanificacion.planificacion()[this.servicePlanificacion.planificacion().length - 1]
         this.metas = this.data.incentivos.length;
         this.metas_ = this.data.incentivos_qerametik.length;
@@ -97,6 +104,29 @@ export default class PlanificacionComponent {
   public metas_ = 1
   public semana_selected = 0
 
+
+  popupData: any = null;
+
+  togglePopup(fecha: string, nombre: string) {
+    if (this.popupData?.fecha === fecha && this.popupData?.nombre === nombre) {
+      this.popupData = null; // Cierra si está abierto
+    } else {
+      this.popupData = { fecha, nombre }; // Abre con nuevos datos
+    }
+  }
+
+  isPopupOpen(fecha: string, nombre: string) {
+    return this.popupData?.fecha === fecha && this.popupData?.nombre === nombre;
+  }
+
+  cerrarPopup() {
+    this.popupData = null;
+  }
+
+  editarPlan(fecha: string, nombre: string) {
+    console.log('Editar plan:', { fecha, nombre });
+  }
+
   Aja(i: number) {
     if (i === this.semana_selected) {
       return true
@@ -109,45 +139,56 @@ export default class PlanificacionComponent {
 
   calcularSemanas() {
     if (this.data.inicio && this.data.cierre) {
-      // Convertir las fechas de inicio y cierre en objetos Date
       const inicio = new Date(this.data.inicio);
       const cierre = new Date(this.data.cierre);
 
       let currentDate = new Date(inicio);
       const semanas = [];
-
-      // Calcular las semanas
       let semana = [];
-      // Empezar desde la fecha de inicio
-      while (currentDate <= cierre) {
-        // Crear un objeto para el día actual
+
+      // Ajustar la fecha de inicio para que comience en domingo
+      while (currentDate.getDay() !== 0) {
         semana.push({
-          dia: this.diaSemana(currentDate.getDay()),  // Obtener el nombre del día
+          dia: this.diaSemana(currentDate.getDay()),
           fecha: new Date(currentDate)
         });
-
-        // Si ya tenemos 7 días, es una semana completa
-        if (semana.length === 7) {
-          semanas.push(semana);
-          semana = [];  // Reiniciar la semana para la siguiente
-        }
-
-        // Avanzar al siguiente día
         currentDate.setDate(currentDate.getDate() + 1);
       }
 
-      // Si la última semana tiene menos de 7 días, la agregamos tal cual
+      // Agregar la primera semana incompleta (si es necesario)
+      if (semana.length > 0) {
+        semanas.push(semana);
+        semana = [];
+      }
+
+      // Continuar desde el siguiente domingo
+      while (currentDate <= cierre) {
+        semana.push({
+          dia: this.diaSemana(currentDate.getDay()),
+          fecha: new Date(currentDate)
+        });
+
+        // Si el día es sábado, cerrar la semana
+        if (currentDate.getDay() === 6) {
+          semanas.push(semana);
+          semana = [];
+        }
+
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+
+      // Agregar los días restantes (si la última semana no terminó en sábado)
       if (semana.length > 0) {
         semanas.push(semana);
       }
 
       this.semanas = semanas;
-      console.log(this.semanas)
+      console.log(this.semanas);
     }
   }
 
   diaSemana(dia: number): string {
-    const dias = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+    const dias = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
     return dias[dia];
   }
 
@@ -261,8 +302,8 @@ export default class PlanificacionComponent {
 
   addplanificacion() {
     this.data.planificacion.push(this.plan)
+    this.servicePlanificacion.NuevaPlanificacion(this.data)
     this.cerrar_();
-    console.log(this.data)
     Swal.fire({
       title: 'Se agregó plan a promotora',
       icon: 'success',
@@ -303,6 +344,10 @@ export default class PlanificacionComponent {
     return this.data.planificacion.filter(
       (p: any) => p.fecha == fechaConvertida && p.promotora === promotora);
 
+  }
+
+  FiltroPorRegion() {
+    return this.promotoras.users().filter((promotora: any) => promotora.region === this.Region)
   }
 
 

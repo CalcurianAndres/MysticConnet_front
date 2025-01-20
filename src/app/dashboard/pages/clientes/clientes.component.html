@@ -1,0 +1,53 @@
+@if(!loading){
+
+<div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
+    <div class="card-content">
+        <app-title [title]="cliente" />
+        Resumen
+    </div>
+</div>
+
+<div class="control">
+    <label for="" class="label">Mes</label>
+    <div class="select">
+        <select [(ngModel)]="indexPlanificacion" (change)="cambiar()">
+            @for(planificaciones of planificacion.planificacion(); track $index){
+            <option [value]="$index">{{planificaciones.mes}}</option>
+            }
+        </select>
+    </div>
+</div>
+
+<hr>
+
+<table class="table is-fullwidth is-striped">
+    <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Promotora</th>
+            <th>Marca</th>
+            <th>Productos vendidos</th>
+            <th>Ver</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for(reporte of _reportes;track $index){
+        <tr>
+            <td>{{reporte.fecha | date:'dd/MM/yyyy'}}</td>
+            <td><a [routerLink]="['/dashboard/promotora',reporte.promotora._id]">{{reporte.promotora.nombre}}
+                    {{reporte.promotora.apellido}}</a></td>
+            <td>{{reporte.productos[0].producto.marca}}</td>
+            <td>{{sumarPorductos(reporte)}}</td>
+            <td>
+                <button class="button is-success" [routerLink]="['/dashboard/detalle',reporte._id]">
+                    <span class="icon"><i class="fas fa-eye"></i></span>
+                    <span>Ver</span>
+                </button>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+} @else {
+Cargando cliente...
+}

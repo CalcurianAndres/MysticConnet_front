@@ -1,0 +1,45 @@
+@if(!loading){
+<div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
+    <div class="card-content">
+        <app-title title="Reporte" />
+        Resumen
+    </div>
+</div>
+
+<hr>
+
+<b>Fecha:</b> {{_reporte.fecha | date:'dd/MM/yyyy'}} <br>
+<b>Cliente:</b> <a [routerLink]="['/dashboard/cliente',_reporte.cliente.cliente]">{{_reporte.cliente.cliente}}</a>
+<br>
+<b>Marca:</b> {{_reporte.cliente.marca}} <br>
+<b>Promotora:</b> <a [routerLink]="['/dashboard/promotora',_reporte.promotora._id]">{{_reporte.promotora.nombre}}
+    {{_reporte.promotora.apellido}}</a> <br>
+<b>Tipo:</b> {{_reporte.tipo}} <br>
+<b>Observación:</b> {{_reporte.observacion}}
+<br>
+<table class="table is-fullwidth is-striped">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Almacén inicial</th>
+            <th>Almacén final</th>
+            <th>Cantidad</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @for(producto of _reporte.productos;track $index){
+        <tr>
+            <td>({{producto.producto.linea}}) {{producto.producto.producto}}</td>
+            <td>{{producto.inicio}}</td>
+            <td>{{producto.final}}</td>
+            <td>{{producto.cantidad}}</td>
+            <td></td>
+        </tr>
+        }
+    </tbody>
+</table>
+
+}@else {
+Cargando reporte...
+}

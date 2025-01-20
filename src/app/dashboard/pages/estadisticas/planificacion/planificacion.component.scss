@@ -13,30 +13,57 @@
 }
 
 .popup {
-    display: none;
-    /* Oculta el popup por defecto */
-    position: absolute;
-    /* Ubicación relativa al contenedor */
-    top: 100%;
-    /* Justo debajo del texto subrayado */
+    position: fixed;
+    /* Ahora es fijo, no depende del contenedor */
+    top: 50%;
+    /* Centrado verticalmente */
     left: 50%;
-    /* Centra horizontalmente el popup */
-    transform: translateX(-50%);
-    /* Ajusta la posición centrada */
-    background-color: #fff;
-    /* Fondo blanco para el popup */
-    color: #333;
-    /* Color del texto */
-    padding: 10px;
-    /* Espaciado interno */
+    /* Centrado horizontalmente */
+    transform: translate(-50%, -50%);
+    /* Ajusta para centrar correctamente */
+    background: white;
+    /* Fondo blanco para destacar */
     border: 1px solid #ccc;
-    /* Borde del popup */
-    border-radius: 5px;
+    /* Borde sutil */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    /* Sombra para un efecto elevado */
+    border-radius: 8px;
     /* Bordes redondeados */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    /* Sombra para el popup */
-    z-index: 100;
-    /* Asegura que esté sobre otros elementos */
-    white-space: nowrap;
-    /* Evita que el texto se divida en líneas */
+    padding: 16px;
+    /* Espaciado interno */
+    display: none;
+    /* Oculto por defecto */
+    z-index: 10000;
+    /* Muy alto para estar sobre todos los elementos */
+}
+
+.popup.show {
+    display: block;
+    /* Visible al activarse */
+}
+
+.popup-content {
+    text-align: center;
+    /* Centra el contenido del popup */
+}
+
+.info-icon {
+    color: #007bff;
+    /* Azul para el icono de info */
+    cursor: pointer;
+    /* Apunta como clickeable */
+    margin-right: 8px;
+    /* Espaciado a la derecha */
+}
+
+.edit-icon {
+    color: #ffc107;
+    /* Amarillo para el icono de editar */
+    cursor: pointer;
+    /* Apunta como clickeable */
+}
+
+.popup .button {
+    margin-top: 8px;
+    /* Espaciado superior para el botón */
 }

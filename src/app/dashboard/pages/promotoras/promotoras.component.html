@@ -1,0 +1,108 @@
+@if(loading_perfil){
+<div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
+    <div class="card-content">
+        <app-title title="Progreso" />
+        {{perfil.nombre}} {{perfil.apellido}}
+    </div>
+</div>
+
+
+<div class="control">
+    <label for="" class="label">Mes</label>
+    <div class="select">
+        <select [(ngModel)]="indexPlanificacion" (change)="cambiar()">
+            @for(planificaciones of planificacion.planificacion(); track $index){
+            <option [value]="$index">{{planificaciones.mes}}</option>
+            }
+        </select>
+    </div>
+</div>
+<hr>
+
+<span class="title">
+    Progreso Mystic ({{totalCantidadMystic}} Productos - {{totalPuntosMystic}} Puntos)
+</span>
+<hr>
+
+@if(loading){
+<table class="table is-fullwidth is-striped">
+    <thead>
+        <th>Fecha</th>
+        <th>Puntuacion obtenida</th>
+        <th>Productos vendidos</th>
+        <!-- <th>Editar</th> -->
+    </thead>
+    <tbody>
+        @for(reporte of ReportesFiltradosMystic; track $index){
+        <tr>
+            <td>{{reporte.fecha | date:'dd/MM/YYYY'}}</td>
+            <td>{{reporte.puntuacionTotal}}</td>
+            <td>{{reporte.totalCantidad}}</td>
+            <!-- <td>
+                <button class="button" style="background-color: transparent; border: none; color: rgb(113, 184, 113);"
+                    (click)="EditarReporte_Mystic(reporte._id)">
+                    <span class="icon"><i class="fas fa-edit"></i></span>
+                </button>
+            </td> -->
+        </tr>
+        }
+    </tbody>
+</table>
+}@else {
+<app-loadings />
+}
+
+<span class="title">
+    Progreso Qerametik ({{totalCantidadQerametik}} Productos - {{totalPuntosQerametik}} Puntos)
+</span>
+<hr>
+
+@if(loading){
+<table class="table is-fullwidth is-striped">
+    <thead>
+        <th>Fecha</th>
+        <th>Puntuacion obtenida</th>
+        <th>Productos vendidos</th>
+        <!-- <th>Editar</th> -->
+    </thead>
+    <tbody>
+        @for(reporte of ReportesFiltradosQerametik; track $index){
+        <tr>
+            <td>{{reporte.fecha | date:'dd/MM/YYYY'}}</td>
+            <td>{{reporte.puntuacionTotal}}</td>
+            <td>{{reporte.totalCantidad}}</td>
+            <!-- <td>
+                <button class="button" style="background-color: transparent; border: none; color: rgb(113, 184, 113);"
+                    (click)="EditarReporte_Qera(reporte._id)">
+                    <span class="icon"><i class="fas fa-edit"></i></span>
+                </button>
+            </td> -->
+        </tr>
+        }
+    </tbody>
+</table>
+}@else {
+<app-loadings />
+}
+
+<span class="title">
+    Ventas por cliente
+</span>
+<hr>
+@if(loading_clientes){
+<table class="table is-fullwidth is-striped">
+    <tbody>
+        <tr *ngFor="let entry of Separado_por_clientes; let i = index;">
+            <th><a [routerLink]="['/dashboard/cliente',entry.nombre]">{{ entry.nombre }}</a></th>
+            <td>{{ entry.totalProductosVendidos }} Productos - ({{entry.totalMystic}} Mystic) ({{entry.totalQerametik}}
+                Qerametik)</td>
+        </tr>
+    </tbody>
+</table>
+}
+
+<br>
+
+}@else {
+Cargando perfil...
+}

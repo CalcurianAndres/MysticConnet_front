@@ -30,8 +30,8 @@ export default class ReporteComponent {
   public isRotated = signal(false);
   public ProductosSelected: { producto: productos, inicial: number, final: number }[] = [];
 
-  public establecimiento: string = '';
-  public tipo: string = '';
+  public establecimiento: any = '';
+  public tipo: any = '';
   public tipo_evento: string = '';
   public obervacion: string = '';
 
@@ -55,15 +55,12 @@ export default class ReporteComponent {
   public cliente = ''
   public modalCliente = false
 
+  public estab: boolean = false;
+  public planificado: boolean = false;
+
   constructor() {
     this.date_log = this.getFormattedDate()
     this.date_aja = new Date();
-    // setTimeout(() => {
-    //   if (this.planification(this.date_aja, this.loginSevice.usuario.nombre).cliente) {
-    //     this.establecimiento = this.planification(this.date_aja, this.loginSevice.usuario.nombre).cliente
-    //     console.log(this.establecimiento)
-    //   }
-    // }, 1000);
   }
 
   addCliente(cliente: any) {
@@ -100,7 +97,6 @@ export default class ReporteComponent {
   }
 
   BuscarCliente(e: any) {
-    console.log(e.value)
     if (e.value.trim() === '') {
       // Si el campo de búsqueda está vacío, mostrar el array vacío
       this.filteredClientes = [];
@@ -313,9 +309,25 @@ export default class ReporteComponent {
     fechaUTC.setUTCHours(0, 0, 0, 0);
     const fechaConvertida_ = fechaUTC.toISOString();
 
-
-    console.log(this.planificacion.planificacion()[this.planificacion.planificacion().length - 1].planificacion, '<=>', fechaConvertida_)
     return this.planificacion.planificacion()[this.planificacion.planificacion().length - 1].planificacion.find((p: any) => p.fecha === fechaConvertida_ && p.promotora === promotora)
+  }
+
+  buscarClientePorNombre() {
+    this.estab = false;
+    this.planificado = false
+    setTimeout(() => {
+      if (this.planification(this.date_aja, this.loginSevice.usuario.nombre)) {
+        let nombre = this.planification(this.date_aja, this.loginSevice.usuario.nombre).cliente_nombre
+        this.establecimiento = this.ClientServices.clientes().find(c => c.marca === this.marca_seleccionada && c.cliente === nombre)?._id
+        if (this.establecimiento != undefined) {
+          this.tipo = this.planification(this.date_aja, this.loginSevice.usuario.nombre).tipo
+          this.planificado = true;
+        }
+        this.estab = true;
+      } else {
+        this.estab = true
+      }
+    }, 1000);
   }
 
 

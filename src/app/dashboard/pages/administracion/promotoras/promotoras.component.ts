@@ -21,6 +21,7 @@ export class PromotorasComponent {
 
   public data: promotoras = {
     nombre: '',
+    marca: '',
     apellido: '',
     correo: '',
     telefono: '',
@@ -38,7 +39,7 @@ export class PromotorasComponent {
 
   // Variables para paginación
   currentPage: number = 1;
-  itemsPerPage: number = 10;
+  itemsPerPage: number = 100;
 
   get totalItems(): number {
     return this.UserService.users().length;
@@ -70,6 +71,7 @@ export class PromotorasComponent {
     this.Edicion.update(value => false)
     this.data = {
       nombre: '',
+      marca: '',
       apellido: '',
       correo: '',
       telefono: '',
