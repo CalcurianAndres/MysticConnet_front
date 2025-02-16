@@ -8,7 +8,6 @@ import { UserResponseService } from '@services/user-response.service';
 import { PlanificacionService } from '@services/planificacion.service';
 import { LoadingsComponent } from '@shared/loadings/loadings.component';
 import { RouterModule } from '@angular/router';
-
 @Component({
   selector: 'app-estadisticas',
   imports: [TitleComponent, CommonModule, FormsModule, LoadingsComponent, RouterModule],
@@ -23,13 +22,18 @@ export default class EstadisticasComponent {
   public active: boolean = false;
   indexPlanificacion: any = 0
   public promotorasFiltered: any = [];
+  public promotoras__: boolean = true;
+  public Cargando = false;
 
   public promotorasFilteredFunction(data: any) {
     if (data.value === 'fija') {
       this.promotorasFiltered = this.promotoras.users().filter((promotora: any) => promotora.fija === true);
+      this.promotoras__ = true;
     } else {
       this.promotorasFiltered = this.promotoras.users().filter((promotora: any) => promotora.fija === false);
+      this.promotoras__ = false;
     }
+    this.cambiarPlanificacion();
   }
 
 
@@ -46,10 +50,9 @@ export default class EstadisticasComponent {
       if (!this.planificacionService.loading()) {
         this.indexPlanificacion = this.planificacionService.planificacion().length - 1
         this.promotorasFilteredFunction({ value: 'fija' })
-        this.ReportesServices.getReportesAgrupados(true, this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
+        this.ReportesServices.getReportesAgrupados(this.promotoras__, this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
           next: (reportes) => {
             this.reportesAgrupados = reportes;
-            console.log(this.reportesAgrupados)
           },
           error: (error) => {
             console.error('Error al cargar los reportes:', error);
@@ -62,12 +65,13 @@ export default class EstadisticasComponent {
 
   cambiarPlanificacion() {
     setTimeout(() => {
+      this.Cargando = true
       if (!this.planificacionService.loading()) {
-        this.promotorasFilteredFunction({ value: 'fija' })
-        this.ReportesServices.getReportesAgrupados(true, this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
+        // this.promotorasFilteredFunction({ value: this.promotoras__ })
+        this.ReportesServices.getReportesAgrupados(this.promotoras__, this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
           next: (reportes) => {
             this.reportesAgrupados = reportes;
-            console.log(this.reportesAgrupados)
+            this.Cargando = false
           },
           error: (error) => {
             console.error('Error al cargar los reportes:', error);

@@ -33,22 +33,30 @@
     </div>
 </div>
 <hr>
+@if(!loading){
 <span class="title">Mystic</span>
-<table class="table is-fullwidth is-striped">
-    <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+<br> <br>
+<table class="table is-fullwidth is-striped" style="font-size: x-small;">
+    <thead style="position: sticky; top: 0; z-index: 1;">
         <tr>
             <th>Promotora</th>
             <th>Marca</th>
             <th>Región</th>
-            <th>Ventas por impulso</th>
-            <th>Ventas por evento</th>
+            <th>Ventas / impulso</th>
+            <th>Ventas / evento</th>
             <th>Productos vendidos</th>
             <th>Puntuación</th>
             <th>Incentivo</th>
-            <th>Promedio de exito</th>
+            <th>Promedio de exito Impuso</th>
+            <th>Promedio de exito Eventos</th>
+            <th>Promedio General</th>
+            <th>Rebrandig</th>
             <th>Costo Promedio</th>
             <th>Monto Und. Vendidas</th>
             <th>Incidencias</th>
+            <th>Sueldo diario</th>
+            <th>Ventas diarias</th>
+            <th>Incidencia diaria</th>
         </tr>
     </thead>
     <tbody>
@@ -61,47 +69,128 @@
             <td>{{productos['Total ventas de evento'] | number:'1.0-0'}} ({{productos['Dias evento']}} dias)</td>
             <td>{{productos['Productos vendidos'] | number:'1.0-0'}}</td>
             <td>{{productos['Puntuación'] | number:'1.1-1'}}</td>
-            <td>{{productos.Incentivo | currency:'USD'}}</td>
             <td>
-                @if(calcularPorcentaje(productos['Metas alcanzadas'], productos['Dias trabajados']) >= 60){
-                <span class="tag is-success">{{calcularPorcentaje(productos["Metas alcanzadas"],
-                    productos["Dias trabajados"]) | number:'1.2-2'}}%</span>
-                } @else if (calcularPorcentaje(productos['Metas alcanzadas'], productos['Dias trabajados']) >= 30) {
-                <span class="tag is-warning">{{calcularPorcentaje(productos['Metas alcanzadas'],
-                    productos['Dias trabajados']) | number:'1.2-2'}}%</span>
+                @if(productos['Rebranding']>=30){
+                {{productos.Incentivo | currency:'USD'}}
+                } @else{
+                {{productos.Incentivo * 0 | currency:'USD'}}
+                }
+            </td>
+            <td>
+                @if(calcularPorcentaje_impulso_Mystic(
+                productos['Total ventas de impulso'], productos['Dias impulso'])>=60){
+                <span class="tag is-success">
+                    {{calcularPorcentaje_impulso_Mystic(
+                    productos['Total ventas de impulso'],productos['Dias impulso']) | number:'1.2-2'}}%</span>
+                } @else if (calcularPorcentaje_impulso_Mystic(
+                productos['Total ventas de impulso'],productos['Dias impulso']) >= 30) {
+                <span class="tag is-warning">{{
+                    calcularPorcentaje_impulso_Mystic(productos['Total ventas de impulso'],productos['Dias impulso']) |
+                    number:'1.2-2'}}%</span>
                 }@else {
-                <span class="tag is-danger">{{calcularPorcentaje(productos['Metas alcanzadas'],
-                    productos['Dias trabajados']) | number:'1.2-2'}}%</span>
+                <span class="tag is-danger">{{calcularPorcentaje_impulso_Mystic(
+                    productos['Total ventas de impulso'],productos['Dias impulso']) | number:'1.2-2'}}%</span>
+                }
+            </td>
+
+            <td>
+                @if(calcularPorcentaje_evento_Mystic(
+                productos['Total ventas de evento'], productos['Dias evento'])>=60){
+                <span class="tag is-success">
+                    {{calcularPorcentaje_evento_Mystic(
+                    productos['Total ventas de evento'],productos['Dias evento']) | number:'1.2-2'}}%</span>
+                } @else if (calcularPorcentaje_evento_Mystic(
+                productos['Total ventas de evento'],productos['Dias evento']) >= 30) {
+                <span class="tag is-warning">{{
+                    calcularPorcentaje_evento_Mystic(productos['Total ventas de evento'],productos['Dias evento']) |
+                    number:'1.2-2'}}%</span>
+                }@else {
+                <span class="tag is-danger">{{calcularPorcentaje_evento_Mystic(
+                    productos['Total ventas de evento'],productos['Dias evento']) | number:'1.2-2'}}%</span>
+                }
+            </td>
+            <td>
+                @if(calcularPromedio(calcularPorcentaje_evento_Mystic(
+                productos['Total ventas de evento'], productos['Dias evento']), calcularPorcentaje_impulso_Mystic(
+                productos['Total ventas de impulso'], productos['Dias impulso'])) >=60){
+                <span class="tag is-success">
+                    {{calcularPromedio(calcularPorcentaje_evento_Mystic(
+                    productos['Total ventas de evento'], productos['Dias evento']),
+                    calcularPorcentaje_impulso_Mystic(
+                    productos['Total ventas de impulso'], productos['Dias impulso'])) }}%</span>
+                } @else if (calcularPromedio(calcularPorcentaje_evento_Mystic(
+                productos['Total ventas de evento'], productos['Dias evento']), calcularPorcentaje_impulso_Mystic(
+                productos['Total ventas de impulso'], productos['Dias impulso'])) >= 30) {
+                <span class="tag is-warning">{{
+                    calcularPromedio(calcularPorcentaje_evento_Mystic(
+                    productos['Total ventas de evento'], productos['Dias evento']),
+                    calcularPorcentaje_impulso_Mystic(
+                    productos['Total ventas de impulso'], productos['Dias impulso'])) }}%</span>
+                }@else {
+                <span class="tag is-danger">{{calcularPromedio(calcularPorcentaje_evento_Mystic(
+                    productos['Total ventas de evento'], productos['Dias evento']),
+                    calcularPorcentaje_impulso_Mystic(
+                    productos['Total ventas de impulso'], productos['Dias impulso'])) }}%</span>
+                }
+            </td>
+            <td>
+                @if(calcularPromedioRebranding(productos['Productos vendidos'], productos['Rebranding'])>=30){
+                <span class="tag is-success">{{calcularPromedioRebranding(productos['Productos vendidos'],
+                    productos['Rebranding']) | number:'1.2-2'}}%</span>
+                } @else{
+                <span class="tag is-danger">{{calcularPromedioRebranding(productos['Productos vendidos'],
+                    productos['Rebranding']) | number:'1.2-2'}}%</span>
                 }
             </td>
             <td>{{productos['Costo promedio'] | currency:'USD'}}</td>
             <td>{{productos['Monto de Und. Vendidas'] | currency:'USD'}}</td>
             <td>{{productos.Incidencia | number:'1.2-2'}}%</td>
-        </tr>
-        }@empty {
-        <tr>
-            <td colspan="10">No hay datos</td>
+            <td>{{productos['Sueldo diario'] | number: '1.2-2'}}</td>
+            <td>{{productos['Ventas diarias'] | currency:'USD'}}</td>
+            <td>{{(productos['Sueldo diario'] * 100) / productos['Ventas diarias'] | number: '1.2-2'}}%</td>
         </tr>
         }
+        <tr>
+            <td colspan="7"><strong>Total:</strong></td>
+            <td>{{calcularTotales(datos_Mystic, 'Incentivo') | currency:'USD'}}</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>{{calcularTotales(datos_Mystic, 'Monto de Und. Vendidas') | currency:'USD'}}</td>
+            <td></td>
+        </tr>
+
+        @if(datos_Mystic.length < 1) { <tr>
+            <td colspan="10">No hay datos</td>
+            </tr>
+            }
     </tbody>
 </table>
 <hr>
 <span class="title">Qerametik</span>
-<table class="table is-fullwidth is-striped">
-    <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+<br> <br>
+<table class="table is-fullwidth is-striped" style="font-size: x-small;">
+    <thead style="position: sticky; top: 0; z-index: 1;">
         <tr>
             <th>Promotora</th>
             <th>Marca</th>
             <th>Región</th>
-            <th>Ventas por impulso</th>
-            <th>Ventas por evento</th>
+            <th>Ventas / impulso</th>
+            <th>Ventas / evento</th>
             <th>Productos vendidos</th>
             <th>Puntuación</th>
             <th>Incentivo</th>
-            <th>Promedio de exito</th>
+            <th>Promedio de exito Impuso</th>
+            <th>Promedio de exito Eventos</th>
+            <th>Promedio General</th>
             <th>Costo Promedio</th>
             <th>Monto Und. Vendidas</th>
             <th>Incidencias</th>
+            <th>Sueldo diario</th>
+            <th>Ventas diarias</th>
+            <th>Incidencia diaria</th>
         </tr>
     </thead>
     <tbody>
@@ -116,26 +205,86 @@
             <td>{{productos['Puntuación'] | number:'1.1-1'}}</td>
             <td>{{productos.Incentivo | currency:'USD'}}</td>
             <td>
-                @if(calcularPorcentaje(productos['Metas alcanzadas'], productos['Dias trabajados']) >= 60){
-                <span class="tag is-success">{{calcularPorcentaje(productos["Metas alcanzadas"],
-                    productos["Dias trabajados"]) | number:'1.2-2'}}%</span>
-                } @else if (calcularPorcentaje(productos['Metas alcanzadas'], productos['Dias trabajados']) >= 30) {
-                <span class="tag is-warning">{{calcularPorcentaje(productos['Metas alcanzadas'],
-                    productos['Dias trabajados']) | number:'1.2-2'}}%</span>
+                @if(calcularPorcentaje_impulso_Qerametik(
+                productos['Total ventas de impulso'], productos['Dias impulso'])>=60){
+                <span class="tag is-success ">
+                    {{calcularPorcentaje_impulso_Qerametik(
+                    productos['Total ventas de impulso'],productos['Dias impulso']) | number:'1.2-2'}}%</span>
+                } @else if (calcularPorcentaje_impulso_Qerametik(
+                productos['Total ventas de impulso'],productos['Dias impulso']) >= 30) {
+                <span class="tag is-warning">{{
+                    calcularPorcentaje_impulso_Qerametik(productos['Total ventas de impulso'],productos['Dias impulso'])
+                    |
+                    number:'1.2-2'}}%</span>
                 }@else {
-                <span class="tag is-danger">{{calcularPorcentaje(productos['Metas alcanzadas'],
-                    productos['Dias trabajados']) | number:'1.2-2'}}%</span>
+                <span class="tag is-danger">{{calcularPorcentaje_impulso_Qerametik(
+                    productos['Total ventas de impulso'],productos['Dias impulso']) | number:'1.2-2'}}%</span>
+                }
+            </td>
+
+            <td>
+                @if(calcularPorcentaje_evento_Qerametik(
+                productos['Total ventas de evento'], productos['Dias evento'])>=60){
+                <span class="tag is-success">
+                    {{calcularPorcentaje_evento_Qerametik(
+                    productos['Total ventas de evento'],productos['Dias evento']) | number:'1.2-2'}}%</span>
+                } @else if (calcularPorcentaje_evento_Qerametik(
+                productos['Total ventas de evento'],productos['Dias evento']) >= 30) {
+                <span class="tag is-warning">{{
+                    calcularPorcentaje_evento_Qerametik(productos['Total ventas de evento'],productos['Dias evento']) |
+                    number:'1.2-2'}}%</span>
+                }@else {
+                <span class="tag is-danger">{{calcularPorcentaje_evento_Qerametik(
+                    productos['Total ventas de evento'],productos['Dias evento']) | number:'1.2-2'}}%</span>
+                }
+            </td>
+            <td>
+                @if(calcularPromedio(calcularPorcentaje_evento_Qerametik(
+                productos['Total ventas de evento'], productos['Dias evento']), calcularPorcentaje_impulso_Qerametik(
+                productos['Total ventas de impulso'], productos['Dias impulso'])) >=60){
+                <span class="tag is-success">
+                    {{calcularPromedio(calcularPorcentaje_evento_Qerametik(
+                    productos['Total ventas de evento'], productos['Dias evento']),
+                    calcularPorcentaje_impulso_Qerametik(
+                    productos['Total ventas de impulso'], productos['Dias impulso'])) }}%</span>
+                } @else if (calcularPromedio(calcularPorcentaje_evento_Qerametik(
+                productos['Total ventas de evento'], productos['Dias evento']), calcularPorcentaje_impulso_Qerametik(
+                productos['Total ventas de impulso'], productos['Dias impulso'])) >= 30) {
+                <span class="tag is-warning">{{
+                    calcularPromedio(calcularPorcentaje_evento_Qerametik(
+                    productos['Total ventas de evento'], productos['Dias evento']),
+                    calcularPorcentaje_impulso_Qerametik(
+                    productos['Total ventas de impulso'], productos['Dias impulso'])) }}%</span>
+                }@else {
+                <span class="tag is-danger">{{calcularPromedio(calcularPorcentaje_evento_Qerametik(
+                    productos['Total ventas de evento'], productos['Dias evento']),
+                    calcularPorcentaje_impulso_Qerametik(
+                    productos['Total ventas de impulso'], productos['Dias impulso'])) }}%</span>
                 }
             </td>
             <td>{{productos['Costo promedio'] | currency:'USD'}}</td>
             <td>{{productos['Monto de Und. Vendidas'] | currency:'USD'}}</td>
-            <td>{{productos.Incidencia | number:'1.2-2'}}%</td>
-        </tr>
-        }@empty {
-        <tr>
-            <td colspan="10">No hay datos</td>
+            <td>{{productos.Incidencia}}%</td>
+            <td>{{productos['Sueldo diario'] | number: '1.2-2'}}</td>
+            <td>{{productos['Ventas diarias'] | currency:'USD'}}</td>
+            <td>{{(productos['Sueldo diario'] * 100) / productos['Ventas diarias'] | number: '1.2-2'}}%</td>
         </tr>
         }
+        <tr>
+            <td colspan="7"><strong>Total:</strong></td>
+            <td>{{calcularTotales(datos_Qerametik, 'Incentivo') | currency:'USD'}}</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>{{calcularTotales(datos_Qerametik, 'Monto de Und. Vendidas') | currency:'USD'}}</td>
+            <td></td>
+        </tr>
+
+        @if(datos_Qerametik.length < 1) { <tr>
+            <td colspan="10">No hay datos</td>
+            </tr>
+            }
     </tbody>
 </table>
 
@@ -147,47 +296,32 @@
 <div class="columns">
     <div class="column" style="max-height: 100vh; overflow: scroll;">
         <table class="table is-fullwidth is-striped">
-            <thead style="position: sticky; top: 0; background: white; z-index: 1;">
+            <thead style="position: sticky; top: 0; z-index: 1;">
                 <tr>
-                    <td colspan="2">
-                        <span class="title" style="width: 100%; display: block;">Mystic</span>
+                    <td colspan="4">
+                        <span class="title" style="width: 100%; display: block;">Productos vendidos por clientes</span>
+                         
+                        <div class="button is-succes" (click)="exportarClientes()">
+                            <span class="icon"><i class="fas fa-download"></i></span>
+                            <span>Descargar</span>
+                        </div>
                         <hr>
                     </td>
                 </tr>
                 <tr>
                     <th>Cliente</th>
-                    <th>Total Productos Vendidos</th>
+                    <th>Mystic</th>
+                    <th>Qerametik</th>
+                    <th>Total</th>
                 </tr>
             </thead>
             <tbody>
-                @for (cliente of clientesMystic; track $index) {
+                @for (cliente of clientesArray; track $index) {
                 <tr>
                     <td> <a [routerLink]="['/dashboard/cliente',cliente.cliente]">{{ cliente.cliente }}</a></td>
-                    <td>{{ cliente.totalProductos }}</td>
-                </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-    <div class="column" style="max-height: 100vh; overflow: scroll;">
-        <table class="table is-fullwidth is-striped">
-            <thead style="position: sticky; top: 0; background: white; z-index: 1;">
-                <tr>
-                    <td colspan="2">
-                        <span class="title" style="width: 100%; display: block;">Qerametik</span>
-                        <hr>
-                    </td>
-                </tr>
-                <tr>
-                    <th>Cliente</th>
-                    <th>Total Productos Vendidos</th>
-                </tr>
-            </thead>
-            <tbody>
-                @for (cliente of clientesQerametik; track $index) {
-                <tr>
-                    <td> <a [routerLink]="['/dashboard/cliente',cliente.cliente]">{{ cliente.cliente }}</a></td>
-                    <td>{{ cliente.totalProductos }}</td>
+                    <td>{{ cliente.cantidad_mystic }}</td>
+                    <td>{{ cliente.cantidad_Qerametik }}</td>
+                    <td>{{ cliente.cantidad }}</td>
                 </tr>
                 }
             </tbody>
@@ -209,7 +343,7 @@
             <tbody>
                 @for (zona of ventasPorZonaMystic; track $index) {
                 <tr>
-                    <td>{{ zona.zona }}</td>
+                    <td><a [routerLink]="['/dashboard/region',zona.zona]">{{ zona.zona }}</a></td>
                     <td>{{ zona.totalProductos }}</td>
                 </tr>
                 }
@@ -229,7 +363,7 @@
             <tbody>
                 @for (zona of ventasPorZonaQerametik; track $index) {
                 <tr>
-                    <td>{{ zona.zona }}</td>
+                    <td><a [routerLink]="['/dashboard/region',zona.zona]">{{ zona.zona }}</a></td>
                     <td>{{ zona.totalProductos }}</td>
                 </tr>
                 }
@@ -237,3 +371,34 @@
         </table>
     </div>
 </div>
+
+<div class="card-" style="max-height: 600px; overflow-y: scroll;">
+    <div class="card-content">
+        <span class="title">Clientes no atendidos</span> 
+        <div class="button is-succes" (click)="exportarClientesNoAtendidos()">
+            <span class="icon"><i class="fas fa-download"></i></span>
+            <span>Descargar</span>
+        </div>
+        <br>
+        <table class="table is-fullwidth is-striped">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Cliente</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (cliente of clientesNoAtendidos; track $index; let i = $index) {
+                <tr>
+                    <td>{{i+1}}</td>
+                    <td><a [routerLink]="['/dashboard/cliente',cliente]">{{ cliente }}</a></td>
+                </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+}@else {
+<app-loadings></app-loadings>
+}

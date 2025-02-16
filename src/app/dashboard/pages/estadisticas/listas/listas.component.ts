@@ -8,10 +8,12 @@ import { UserResponseService } from '@services/user-response.service';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { RouterModule } from '@angular/router';
+import { ClientesResponseService } from '@services/clientes-response.service';
+import { LoadingsComponent } from '@shared/loadings/loadings.component';
 
 @Component({
   selector: 'app-listas',
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, LoadingsComponent],
   templateUrl: './listas.component.html',
   styleUrl: './listas.component.scss'
 })
@@ -22,42 +24,93 @@ export class ListasComponent {
   exportarExcel() {
     // Obtener los datos de la tabla
     const datos_Mystic: any[] = this.reportesAgrupadosOrdenados
-      .filter(promotora => this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).mystic > 0) // Filtrar Mystic
-      .map(promotora => ({
-        Promotora: promotora.promotora,
-        Marca: promotora.marca,
-        Region: promotora.region,
-        'Productos vendidos': promotora.productosMystic,
-        'Costo promedio': 2.4,
-        Puntuación: promotora.puntosMystic,
-        Incentivo: this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).mystic,
-        'Promedio exito': this.calcularPorcentaje(promotora.conteoMetaUnidades, this.buscarDiasTrabajados(promotora.promotora).totalDias),
-        'Monto de Und. Vendidas': 2.4 * promotora.productosMystic,
-        Incidencia: (this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).mystic / (2.4 * promotora.productosMystic) * 100).toFixed(2),
-        'Total ventas de impulso': promotora.totalImpulsos,
-        'Total ventas de evento': promotora.totalEventos,
-        'Dias impulso': this.buscarDiasTrabajados(promotora.promotora).impulsoMystic,
-        'Dias evento': this.buscarDiasTrabajados(promotora.promotora).eventoMystic
-      }))
-      .sort((a, b) => b['Puntuación'] - a['Puntuación']); // Ordenar por Incentivo en orden descendente
+      .filter(promotora => {
+        const incentivo = this.obtenerIncentivos(
+          promotora.puntosMystic, promotora.puntosQerametik, promotora.promotora,
+          promotora.marca, promotora.productosMystic
+        ).mystic;
+
+        return promotora.marca === "Mystic" || (promotora.marca !== "Mystic" && incentivo > 0);
+      })
+      .map(promotora => {
+        // Verificar si el porcentaje de rebranding es menor a 30
+        const rebranding = this.calcularPromedioRebranding(promotora.productosMystic, promotora.porcentajeRebranding)
+        let incentivo = this.obtenerIncentivos(
+          promotora.puntosMystic, promotora.puntosQerametik, promotora.promotora,
+          promotora.marca, promotora.productosMystic
+        ).mystic;
+
+        // Si el Rebranding es menor a 30%, el incentivo se pone a 0
+        if (rebranding < 30) {
+          incentivo = 0;
+        }
+
+        return {
+          Promotora: promotora.promotora,
+          Marca: promotora.marca,
+          Region: promotora.region,
+          'Productos vendidos': promotora.productosMystic.toFixed(2),
+          'Costo promedio': this.promedio.mystic.toFixed(2),
+          Puntuación: promotora.puntosMystic.toFixed(2),
+          Incentivo: incentivo.toFixed(2), // Usar el incentivo con 2 decimales
+          'Promedio de exito Impuso': this.calcularPorcentaje_impulso_Mystic(
+            promotora.totalImpulsos, this.buscarDiasTrabajados(promotora.promotora).impulsoMystic).toFixed(2),
+          'Promedio de exito Eventos': this.calcularPorcentaje_evento_Mystic(
+            promotora.totalEventos, this.buscarDiasTrabajados(promotora.promotora).eventoMystic).toFixed(2),
+          'Promedio General': this.calcularPromedio(this.calcularPorcentaje_impulso_Mystic(
+            promotora.totalImpulsos, this.buscarDiasTrabajados(promotora.promotora).impulsoMystic), this.calcularPorcentaje_evento_Mystic(
+              promotora.totalEventos, this.buscarDiasTrabajados(promotora.promotora).eventoMystic)).toFixed(2),
+          'Rebranding': `${rebranding.toFixed(2)}%`,
+          'Monto de Und. Vendidas': (this.promedio.mystic * promotora.productosMystic).toFixed(2),
+          Incidencia: (incentivo / (this.promedio.mystic * promotora.productosMystic) * 100).toFixed(2),
+          'Total ventas de impulso': promotora.totalImpulsos.toFixed(2),
+          'Total ventas de evento': promotora.totalEventos.toFixed(2),
+          'Dias impulso': this.buscarDiasTrabajados(promotora.promotora).impulsoMystic.toFixed(2),
+          'Dias evento': this.buscarDiasTrabajados(promotora.promotora).eventoMystic.toFixed(2),
+          'Sueldo diario': (Number(promotora.sueldo) / this.buscarDiasTrabajados(promotora.promotora).totalDias).toFixed(2),
+          'Ventas diarias': ((this.promedio.mystic * promotora.productosMystic) / this.buscarDiasTrabajados(promotora.promotora).totalDias).toFixed(2),
+          'incidencia diaria': (((this.promedio.mystic * promotora.productosMystic) / this.buscarDiasTrabajados(promotora.promotora).totalDias * 100) / Number(promotora.sueldo) / this.buscarDiasTrabajados(promotora.promotora).totalDias).toFixed(2)
+        };
+      })
+      .sort((a, b) => Number(b['Puntuación']) - Number(a['Puntuación'])); // Ordenar por Puntuación en orden descendente
+
+
 
     const datos_Qerametik: any[] = this.reportesAgrupadosOrdenados
-      .filter(promotora => this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).qerametik > 0) // Filtrar Qerametik
+      .filter(promotora => {
+        const incentivo = this.obtenerIncentivos(
+          promotora.puntosMystic, promotora.puntosQerametik, promotora.promotora,
+          promotora.marca, promotora.productosMystic
+        ).qerametik;
+
+        return promotora.marca === "Qerametik" || (promotora.marca !== "Qerametik" && incentivo > 0);
+      })
       .map(promotora => ({
         Promotora: promotora.promotora,
         Marca: promotora.marca,
         Region: promotora.region,
         'Productos vendidos': promotora.productosQerametik,
-        'Costo promedio': 4.89,
+        'Costo promedio': this.promedio.qerametik,
         Puntuación: promotora.puntosQerametik,
-        Incentivo: this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).qerametik,
-        'Promedio exito': this.calcularPorcentaje(promotora.conteoMetaUnidades, this.buscarDiasTrabajados(promotora.promotora).totalDias),
-        'Monto de Und. Vendidas': 4.89 * promotora.productosQerametik,
-        Incidencia: (this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).qerametik / (4.89 * promotora.productosQerametik) * 100).toFixed(2),
+        Incentivo: this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik, promotora.promotora, promotora.marca, promotora.productosQerametik).qerametik,
+        'Promedio de exito Impuso': this.calcularPorcentaje_impulso_Qerametik(
+          promotora.totalImpulsos_qerametik, this.buscarDiasTrabajados(promotora.promotora).impulsoQerametik),
+        'Promedio de exito Eventos': this.calcularPorcentaje_evento_Qerametik(
+          promotora.totalEventos_qerametik, this.buscarDiasTrabajados(promotora.promotora).eventoQerametik
+        ),
+        'Promedio General': this.calcularPromedio(this.calcularPorcentaje_impulso_Qerametik(
+          promotora.totalImpulsos_qerametik, this.buscarDiasTrabajados(promotora.promotora).impulsoQerametik), this.calcularPorcentaje_evento_Qerametik(
+            promotora.totalEventos_qerametik, this.buscarDiasTrabajados(promotora.promotora).eventoQerametik)),
+        // 'Promedio exito': this.calcularPorcentaje(promotora.conteoMetaUnidadesQ, this.buscarDiasTrabajados(promotora.promotora).totalDias),
+        'Monto de Und. Vendidas': this.promedio.qerametik * promotora.productosQerametik,
+        Incidencia: (this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik, promotora.promotora, promotora.marca, promotora.productosQerametik).qerametik / (this.promedio.qerametik * promotora.productosQerametik) * 100).toFixed(2),
         'Total ventas de impulso': promotora.totalImpulsos_qerametik,
         'Total ventas de evento': promotora.totalEventos_qerametik,
         'Dias impulso': this.buscarDiasTrabajados(promotora.promotora).impulsoQerametik,
-        'Dias evento': this.buscarDiasTrabajados(promotora.promotora).eventoQerametik
+        'Dias evento': this.buscarDiasTrabajados(promotora.promotora).eventoQerametik,
+        'Sueldo diario': Number(promotora.sueldo) / this.buscarDiasTrabajados(promotora.promotora).totalDias,
+        'Ventas diarias': (this.promedio.qerametik * promotora.productosQerametik) / this.buscarDiasTrabajados(promotora.promotora).totalDias,
+        'incidencia diaria': ((this.promedio.qerametik * promotora.productosQerametik) / this.buscarDiasTrabajados(promotora.promotora).totalDias * 100) / Number(promotora.sueldo) / this.buscarDiasTrabajados(promotora.promotora).totalDias
       }))
       .sort((a, b) => b['Puntuación'] - a['Puntuación']); // Ordenar por Incentivo en orden descendente
 
@@ -95,6 +148,10 @@ export class ListasComponent {
     ).toFixed(2) + '%';
   }
 
+  calcularPromedioRebranding(total: number, rebrandig: number) {
+    return rebrandig / total * 100
+  }
+
 
   // PRUEBA EXCEL
 
@@ -102,6 +159,7 @@ export class ListasComponent {
   public reportesAgrupados!: ReporteAgrupado[];
   public planificacionService = inject(PlanificacionService)
   public promotoras = inject(UserResponseService)
+  public clientes = inject(ClientesResponseService)
 
   public datos_Mystic: any[] = [];
   public datos_Qerametik: any[] = [];
@@ -110,6 +168,17 @@ export class ListasComponent {
   public clientesQerametik: { cliente: string; totalProductos: number }[] = [];
   public ventasPorZonaMystic: { zona: string; totalProductos: number }[] = [];
   public ventasPorZonaQerametik: { zona: string; totalProductos: number }[] = [];
+  public clientesNoAtendidos: any = [];
+
+
+  public fijas = true;
+  public clientesArray: any[] = [];
+  public promedio: any = {
+    mystic: 0,
+    qerametik: 0
+  }
+
+  public loading = true;
 
 
 
@@ -136,55 +205,93 @@ export class ListasComponent {
   }
 
   refresh() {
+    this.loading = true;
     setTimeout(() => {
+      this.promedio.mystic = this.planificacionService.planificacion()[this.indexPlanificacion].precios.Mystic
+      this.promedio.qerametik = this.planificacionService.planificacion()[this.indexPlanificacion].precios.Qerametik
       if (!this.planificacionService.loading()) {
-        this.ReportesServices.getReportesAgrupados_(true, this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
+        this.ReportesServices.getReportesAgrupados_(this.fijas, this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
           next: (reportes) => {
             this.reportesAgrupados = reportes;
             this.reportesAgrupadosOrdenados = [...this.reportesAgrupados];
 
             // Obtener los datos de la tabla
             this.datos_Mystic = this.reportesAgrupadosOrdenados
-              .filter(promotora => this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).mystic >= 0) // Filtrar Mystic
+              .filter(promotora => {
+                const incentivo = this.obtenerIncentivos(
+                  promotora.puntosMystic, promotora.puntosQerametik, promotora.promotora,
+                  promotora.marca, promotora.productosMystic
+                ).mystic;
+
+                return promotora.marca === "Mystic" || (promotora.marca !== "Mystic" && incentivo > 0);
+              })
               .map(promotora => ({
                 Promotora: promotora.promotora,
                 Marca: promotora.marca,
                 Region: promotora.region,
+                Rebranding: promotora.porcentajeRebranding,
                 'Productos vendidos': promotora.productosMystic,
-                'Costo promedio': 2.4,
+                'Costo promedio': this.promedio.mystic,
                 Puntuación: promotora.puntosMystic,
-                Incentivo: this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).mystic,
-                'Monto de Und. Vendidas': 2.4 * promotora.productosMystic,
-                Incidencia: (this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).mystic / (2.4 * promotora.productosMystic) * 100).toFixed(2),
+                Incentivo: this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik, promotora.promotora, promotora.marca, promotora.productosMystic).mystic,
+                'Monto de Und. Vendidas': this.promedio.mystic * promotora.productosMystic,
+                Incidencia: (this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik, promotora.promotora, promotora.marca, promotora.productosMystic).mystic / (this.promedio.mystic * promotora.productosMystic) * 100).toFixed(2),
                 'Total ventas de impulso': promotora.totalImpulsos,
                 'Total ventas de evento': promotora.totalEventos,
                 'Dias trabajados': this.buscarDiasTrabajados(promotora.promotora).totalDias,
                 'Metas alcanzadas': promotora.conteoMetaUnidades,
                 'Dias impulso': this.buscarDiasTrabajados(promotora.promotora).impulsoMystic,
-                'Dias evento': this.buscarDiasTrabajados(promotora.promotora).eventoMystic
+                'Dias evento': this.buscarDiasTrabajados(promotora.promotora).eventoMystic,
+                'Sueldo diario': Number(promotora.sueldo) / this.buscarDiasTrabajados(promotora.promotora).totalDias,
+                'Ventas diarias': (this.promedio.mystic * promotora.productosMystic) / this.buscarDiasTrabajados(promotora.promotora).totalDias,
               }))
               .sort((a, b) => b['Puntuación'] - a['Puntuación']); // Ordenar por Incentivo en orden descendente
 
             this.datos_Qerametik = this.reportesAgrupadosOrdenados
-              .filter(promotora => this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).qerametik >= 0) // Filtrar Qerametik
+              .filter(promotora => {
+                const incentivo = this.obtenerIncentivos(
+                  promotora.puntosMystic, promotora.puntosQerametik, promotora.promotora,
+                  promotora.marca, promotora.productosMystic
+                ).qerametik;
+
+                return promotora.marca === "Qerametik" || (promotora.marca !== "Qerametik" && incentivo > 0);
+              })
               .map(promotora => ({
                 Promotora: promotora.promotora,
                 Marca: promotora.marca,
                 Region: promotora.region,
                 'Productos vendidos': promotora.productosQerametik,
-                'Costo promedio': 4.89,
+                'Costo promedio': this.promedio.qerametik,
                 Puntuación: promotora.puntosQerametik,
-                Incentivo: this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).qerametik,
-                'Monto de Und. Vendidas': 4.89 * promotora.productosQerametik,
-                Incidencia: (this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik).qerametik / (4.89 * promotora.productosQerametik) * 100).toFixed(2),
+                Incentivo: this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik, promotora.promotora, promotora.marca, promotora.productosQerametik).qerametik,
+                'Monto de Und. Vendidas': this.promedio.qerametik * promotora.productosQerametik,
+                Incidencia: (this.obtenerIncentivos(promotora.puntosMystic, promotora.puntosQerametik, promotora.promotora, promotora.marca, promotora.productosQerametik).qerametik / (this.promedio.qerametik * promotora.productosQerametik) * 100).toFixed(2),
                 'Total ventas de impulso': promotora.totalImpulsos_qerametik,
                 'Total ventas de evento': promotora.totalEventos_qerametik,
                 'Dias trabajados': this.buscarDiasTrabajados(promotora.promotora).totalDias,
                 'Metas alcanzadas': promotora.conteoMetaUnidadesQ,
                 'Dias impulso': this.buscarDiasTrabajados(promotora.promotora).impulsoQerametik,
-                'Dias evento': this.buscarDiasTrabajados(promotora.promotora).eventoQerametik
+                'Dias evento': this.buscarDiasTrabajados(promotora.promotora).eventoQerametik,
+                'Sueldo diario': Number(promotora.sueldo) / this.buscarDiasTrabajados(promotora.promotora).totalDias,
+                'Ventas diarias': (this.promedio.qerametik * promotora.productosQerametik) / this.buscarDiasTrabajados(promotora.promotora).totalDias,
               }))
               .sort((a, b) => b['Puntuación'] - a['Puntuación']);
+
+            const clientesSet = new Set(); // Usamos un Set para evitar duplicados
+
+            this.clientes.clientes().forEach(cliente => {
+              const atendido = this.reportesAgrupadosOrdenados.some(reporte =>
+                reporte.reportes.some(r => r.cliente === cliente.cliente)
+              );
+
+              if (!atendido) {
+                clientesSet.add(cliente.cliente); // Agregamos solo valores únicos
+              }
+            });
+
+            // Convertimos el Set en array
+            this.clientesNoAtendidos = Array.from(clientesSet);
+            this.loading = false;
           },
           error: (error) => {
             console.error('Error al cargar los reportes:', error);
@@ -256,6 +363,11 @@ export class ListasComponent {
     }
   }
 
+
+  calcularTotales(datos: any[], propiedad: string): number {
+    return datos.reduce((total, item) => total + (item[propiedad] || 0), 0);
+  }
+
   obtenerIncentivo(puntos: number, incentivos: any) {
     // Si los puntos son menores que el mínimo del primer rango
     if (puntos < incentivos[0].de) {
@@ -275,42 +387,76 @@ export class ListasComponent {
     return 0;  // Si no está en ningún rango, devolvemos 0
   }
 
-  obtenerIncentivos(Puntos_Mystic: number, puntos_Qerametik: any) {
+  obtenerIncentivos(Puntos_Mystic: number, puntos_Qerametik: any, promotora: any, marcas: any, productos: any) {
     let totales = 0;
     let mystic = 0;
     let Qerametik = 0;
 
-    if (Puntos_Mystic < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos[0].de) {
-      mystic = 0;
-    } else {
-      for (let i = 0; i < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos.length; i++) {
-        let incentivo = this.planificacionService.planificacion()[this.indexPlanificacion].incentivos[i];
 
-        // Verificamos si los puntos están dentro del rango
-        if (Puntos_Mystic >= incentivo.de && Puntos_Mystic <= incentivo.hasta) {
-          mystic = incentivo.incentivo;  // Devolvemos el incentivo
+    if (this.fijas) {
+      if (Puntos_Mystic < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos[0].de) {
+        mystic = 0;
+      } else {
+        for (let i = 0; i < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos.length; i++) {
+          let incentivo = this.planificacionService.planificacion()[this.indexPlanificacion].incentivos[i];
+
+          // Verificamos si los puntos están dentro del rango
+          if (Puntos_Mystic >= incentivo.de && Puntos_Mystic <= incentivo.hasta) {
+            mystic = incentivo.incentivo;  // Devolvemos el incentivo
+          }
         }
+      }
+
+      if (puntos_Qerametik < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos_qerametik[0].de) {
+        Qerametik = 0;
+      } else {
+        for (let i = 0; i < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos_qerametik.length; i++) {
+          let incentivo = this.planificacionService.planificacion()[this.indexPlanificacion].incentivos_qerametik[i];
+
+          // Verificamos si los puntos están dentro del rango
+          if (puntos_Qerametik >= incentivo.de && puntos_Qerametik <= incentivo.hasta) {
+            Qerametik = incentivo.incentivo;  // Devolvemos el incentivo
+          }
+        }
+      }
+
+      return {
+        totales: mystic + Qerametik,
+        mystic: mystic,
+        qerametik: Qerametik
+      }
+    } else {
+
+      let dias = this.buscarDiasTrabajados(promotora).totalDias;
+      let ventas_diarias_Mystic = this.planificacionService.planificacion()[this.indexPlanificacion].metas.rebranding.mystic.impulso
+      let ventas_diarias_Qerametik = this.planificacionService.planificacion()[this.indexPlanificacion].metas.rebranding.qerametik.impulso
+
+
+      console.log(marcas)
+
+      if (marcas === 'Mystic') {
+        let Meta = ventas_diarias_Mystic * dias
+        if (productos >= Meta) {
+          mystic = 25
+        } else {
+          mystic = 0
+        }
+      } else {
+        let Meta = ventas_diarias_Qerametik * dias
+        if (productos >= Meta) {
+          Qerametik = 25
+        } else {
+          Qerametik = 0
+        }
+      }
+
+      return {
+        totales: mystic + Qerametik,
+        mystic: mystic,
+        qerametik: Qerametik
       }
     }
 
-    if (puntos_Qerametik < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos_qerametik[0].de) {
-      Qerametik = 0;
-    } else {
-      for (let i = 0; i < this.planificacionService.planificacion()[this.indexPlanificacion].incentivos_qerametik.length; i++) {
-        let incentivo = this.planificacionService.planificacion()[this.indexPlanificacion].incentivos_qerametik[i];
-
-        // Verificamos si los puntos están dentro del rango
-        if (puntos_Qerametik >= incentivo.de && puntos_Qerametik <= incentivo.hasta) {
-          Qerametik = incentivo.incentivo;  // Devolvemos el incentivo
-        }
-      }
-    }
-
-    return {
-      totales: mystic + Qerametik,
-      mystic: mystic,
-      qerametik: Qerametik
-    }
   }
 
   BuscarInfo(prom: string) {
@@ -354,6 +500,9 @@ export class ListasComponent {
       this.planificacionService.planificacion()[this.indexPlanificacion].cierre
     ).subscribe({
       next: (_reportes) => {
+        this.clientesArray = [] // Reiniciar el array de clientes	
+        let productosPorCliente: any = {};
+        _reportes = _reportes.filter(x => x.promotora.fija === this.fijas)
         _reportes.forEach((reporte) => {
           if (
             !reporte.cliente ||
@@ -366,7 +515,7 @@ export class ListasComponent {
 
           const clienteId = reporte.cliente._id;
           const clienteNombre = reporte.cliente.cliente;
-          const clienteMarca = reporte.productos[0].producto.marca; // Asegúrate de que `marca` existe en el objeto cliente.
+          const clienteMarca = reporte.productos[0]?.producto?.marca; // Asegúrate de que `marca` existe en el objeto cliente.
 
           if (!clienteMap[clienteId]) {
             clienteMap[clienteId] = {
@@ -382,8 +531,50 @@ export class ListasComponent {
             0
           );
 
+          reporte.productos.forEach((producto) => {
+            const cliente = reporte.cliente.cliente;
+            const promotora = `${reporte.promotora.nombre} ${reporte.promotora.apellido}`;
+            const producto_ = producto.producto.producto;
+            let productosPorPromotora: any = {};
+
+            let Productos_Mystic = 0;
+            let Productos_Qerametik = 0;
+            let _Productos_Mystic: any = {};
+            let _Productos_Qerametik: any = {};
+            let Rebrandig = 0
+            let tradicional_Mystic = 0
+            let tradicional_Qerametik = 0
+            let impulsos = 0
+            let impulsos_productos = 0
+            let eventos = 0
+            let eventos_productos = 0
+
+            // Inicializamos la entrada del cliente si no existe
+            if (!productosPorCliente[cliente]) {
+              productosPorCliente[cliente] = {
+                cliente,
+                cantidad: 0,
+                cantidad_mystic: 0,
+                cantidad_Qerametik: 0
+              };
+            }
+
+            // Sumar la cantidad al cliente correspondiente
+            productosPorCliente[cliente].cantidad += producto.cantidad;
+
+            if (producto.producto.marca === 'Mystic') {
+              productosPorCliente[cliente].cantidad_mystic += producto.cantidad
+            } else {
+              productosPorCliente[cliente].cantidad_Qerametik += producto.cantidad
+            }
+
+            // this.productoArray = Object.values(productosPorPromotora).sort((a: any, b: any) => b.cantidad - a.cantidad);
+
+          });
+
           clienteMap[clienteId].totalProductos += totalProductosEnReporte;
         });
+        this.clientesArray = Object.values(productosPorCliente).sort((a: any, b: any) => b.cantidad - a.cantidad);
 
         // Convertir el objeto a un array
         const clientesArray = Object.values(clienteMap);
@@ -416,6 +607,7 @@ export class ListasComponent {
       this.planificacionService.planificacion()[this.indexPlanificacion].cierre
     ).subscribe({
       next: (_reportes) => {
+        _reportes = _reportes.filter(x => x.promotora.fija === this.fijas)
         _reportes.forEach((reporte) => {
           if (!reporte.promotora || !reporte.promotora.region) {
             console.warn('Reporte excluido (promotora sin zona):', reporte);
@@ -462,6 +654,8 @@ export class ListasComponent {
 
   CambiarAfijas(fijas: any) {
     if (fijas.value === 'Fijas') {
+      this.fijas = true;
+      this.refresh()
       this.ReportesServices.getReportesAgrupados_(true, this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
         next: (reportes) => {
           this.reportesAgrupados = reportes;
@@ -472,6 +666,8 @@ export class ListasComponent {
         }
       });
     } else {
+      this.fijas = false;
+      this.refresh()
       this.ReportesServices.getReportesAgrupados_(false, this.planificacionService.planificacion()[this.indexPlanificacion].inicio, this.planificacionService.planificacion()[this.indexPlanificacion].cierre).subscribe({
         next: (reportes) => {
           this.reportesAgrupados = reportes;
@@ -488,4 +684,108 @@ export class ListasComponent {
     return (x / y) * 100
   }
 
+  calcularPorcentaje_impulso_Mystic(productos: number, dias_trabajados: number) {
+    let dias = productos / 30;
+
+    if (dias_trabajados < 1) {
+      return 0
+    } else {
+      return (dias * 100) / dias_trabajados;
+    }
+  }
+
+  calcularPorcentaje_evento_Mystic(productos: number, dias_trabajados: number) {
+    let dias = productos / 40;
+
+    if (dias_trabajados < 1) {
+      return 0
+    } else {
+      return (dias * 100) / dias_trabajados;
+    }
+  }
+
+
+  calcularPorcentaje_impulso_Qerametik(productos: number, dias_trabajados: number) {
+    let dias = productos / 15;
+
+    if (dias_trabajados < 1) {
+      return 0
+    } else {
+      return (dias * 100) / dias_trabajados;
+    }
+  }
+
+  calcularPorcentaje_evento_Qerametik(productos: number, dias_trabajados: number) {
+    let dias = productos / 30;
+
+    if (dias_trabajados < 1) {
+      return 0
+    } else {
+      return (dias * 100) / dias_trabajados;
+    }
+  }
+
+  calcularPromedio(x: number, y: number) {
+
+    console.log()
+    if (x === 0 || y === 0) {
+      return Number((x + y).toFixed(2));
+    } else {
+      return Number(((x + y) / 2).toFixed(2));
+    }
+  }
+
+  exportarClientesNoAtendidos(): void {
+    if (!this.clientesNoAtendidos || this.clientesNoAtendidos.length === 0) {
+      console.warn('No hay clientes para exportar.');
+      return;
+    }
+
+    // Transformar el array en un formato adecuado para una sola columna
+    const data = this.clientesNoAtendidos.map((cliente: any) => ({ Clientes: cliente }));
+
+    // Crear una hoja de cálculo con una sola columna
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+
+    // Crear un libro de Excel y añadir la hoja
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Clientes No Atendidos');
+
+    // Generar el archivo Excel en formato binario
+    const excelBuffer: any = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+
+    // Crear un Blob y guardarlo con file-saver
+    const dataBlob: Blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(dataBlob, 'ClientesNoAtendidos.xlsx');
+  }
+
+
+  exportarClientes(): void {
+    if (!this.clientesArray || this.clientesArray.length === 0) {
+      console.warn('No hay clientes para exportar.');
+      return;
+    }
+
+    // Transformar el array en formato adecuado para Excel
+    const data = this.clientesArray.map(cliente => ({
+      Cliente: cliente.cliente,
+      'Cantidad Mystic': cliente.cantidad_mystic,
+      'Cantidad Qerametik': cliente.cantidad_Qerametik,
+      'Cantidad Total': cliente.cantidad
+    }));
+
+    // Crear una hoja de cálculo
+    const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(data);
+
+    // Crear un libro de Excel y añadir la hoja
+    const wb: XLSX.WorkBook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Clientes');
+
+    // Generar el archivo Excel en formato binario
+    const excelBuffer: any = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+
+    // Crear un Blob y guardarlo con file-saver
+    const dataBlob: Blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(dataBlob, 'Clientes.xlsx');
+  }
 }

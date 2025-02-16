@@ -145,15 +145,17 @@
 </div>
 }
 
-<div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
+<div class="card"
+    style="background: linear-gradient(to right, #001a72, #003c99, #005ebf, #4a9dc1, #6bcaba); color: rgb(212, 212, 212);">
     <div class="card-content">
         <app-title title="Progreso" />
         {{login.usuario.nombre}} {{login.usuario.apellido}}
     </div>
 </div>
 
-<span class="title">
-    Progreso Mystic ({{totalCantidadMystic}} Productos - {{totalPuntosMystic}} Puntos)
+<span class="title" style="font-size:medium;">
+    Progreso Mystic ({{totalCantidadMystic | number:'2.0-0'}} Productos - {{totalPuntosMystic | number:'1.2-2'}} Puntos)
+    - ({{Rebrandig_porcentaje | number:'2.2-2'}}% de Rebrandig)
 </span>
 <hr>
 
@@ -163,7 +165,7 @@
         <th>Fecha</th>
         <th>Puntuacion obtenida</th>
         <th>Productos vendidos</th>
-        <!-- <th>Editar</th> -->
+        <th>Editar</th>
     </thead>
     <tbody>
         @for(reporte of ReportesFiltradosMystic; track $index){
@@ -171,12 +173,14 @@
             <td>{{reporte.fecha | date:'dd/MM/YYYY'}}</td>
             <td>{{reporte.puntuacionTotal}}</td>
             <td>{{reporte.totalCantidad}}</td>
-            <!-- <td>
+            <td>
+                @if(!login.usuario.restringido || fechaFormateada === reporte.fecha){
                 <button class="button" style="background-color: transparent; border: none; color: rgb(113, 184, 113);"
                     (click)="EditarReporte_Mystic(reporte._id)">
                     <span class="icon"><i class="fas fa-edit"></i></span>
                 </button>
-            </td> -->
+                }
+            </td>
         </tr>
         }
     </tbody>
@@ -185,8 +189,9 @@
 <app-loadings />
 }
 
-<span class="title">
-    Progreso Qerametik ({{totalCantidadQerametik}} Productos - {{totalPuntosQerametik}} Puntos)
+<span class="title" style="font-size:medium;">
+    Progreso Qerametik ({{totalCantidadQerametik | number:'2.0-0'}} Productos - {{totalPuntosQerametik |
+    number:'2.2-2'}} Puntos)
 </span>
 <hr>
 
@@ -196,7 +201,7 @@
         <th>Fecha</th>
         <th>Puntuacion obtenida</th>
         <th>Productos vendidos</th>
-        <!-- <th>Editar</th> -->
+        <th *ngIf="!login.usuario.restringido">Editar</th>
     </thead>
     <tbody>
         @for(reporte of ReportesFiltradosQerametik; track $index){
@@ -204,12 +209,12 @@
             <td>{{reporte.fecha | date:'dd/MM/YYYY'}}</td>
             <td>{{reporte.puntuacionTotal}}</td>
             <td>{{reporte.totalCantidad}}</td>
-            <!-- <td>
+            <td *ngIf="!login.usuario.restringido">
                 <button class="button" style="background-color: transparent; border: none; color: rgb(113, 184, 113);"
                     (click)="EditarReporte_Qera(reporte._id)">
                     <span class="icon"><i class="fas fa-edit"></i></span>
                 </button>
-            </td> -->
+            </td>
         </tr>
         }
     </tbody>

@@ -33,6 +33,14 @@
             <input type="date" class="input"
                 [value]="simplificar(planificacionService.planificacion()[indexPlanificacion].cierre)" disabled>
         </div>
+        <!-- <div class="control">
+            <label for="" class="label">Generar reporte</label>
+            <button class="button is-success" (click)="generarReporte()">
+                <span class="icon">
+                    <i class="fas fa-file-excel"></i>
+                </span>
+            </button>
+        </div> -->
     </div>
     }
     }
@@ -111,7 +119,7 @@
     <div class="column">
         <div class="card">
             <div class="card-content">
-                <span class="title">TOP 3 Productos Mystic</span> <br>
+                <span class="title">TOP 5 Productos Mystic</span> <br>
                 <table class="table is-fullwidth is-striped">
                     <thead>
                         <tr>
@@ -121,12 +129,14 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @if(topProductos){
                         @for(producto of topProductos.Mystic;track $index){
                         <tr>
                             <td>{{producto.nombre}}</td>
                             <td>{{producto.linea}}</td>
                             <td>{{producto.cantidad | number}}</td>
                         </tr>
+                        }
                         }
                     </tbody>
                 </table>
@@ -136,7 +146,7 @@
     <div class="column">
         <div class="card">
             <div class="card-content">
-                <span class="title">TOP 3 Productos Qerametik</span> <br>
+                <span class="title">TOP 5 Productos Qerametik</span> <br>
                 <table class="table is-fullwidth is-striped">
                     <thead>
                         <tr>
@@ -146,12 +156,14 @@
                         </tr>
                     </thead>
                     <tbody>
+                        @if(topProductos){
                         @for(producto of topProductos.Qerametik;track $index){
                         <tr>
                             <td>{{producto.nombre}}</td>
                             <td>{{producto.linea}}</td>
                             <td>{{producto.cantidad | number}}</td>
                         </tr>
+                        }
                         }
                     </tbody>
                 </table>

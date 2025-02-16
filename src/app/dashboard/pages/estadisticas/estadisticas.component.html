@@ -1,4 +1,5 @@
-<div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
+<div class="card"
+    style="background: linear-gradient(to right, #001a72, #003c99, #005ebf, #4a9dc1, #6bcaba); color: rgb(212, 212, 212);">
     <div class="card-content">
         <app-title title="Estadísticas" />
     </div>
@@ -70,17 +71,18 @@
 <app-loadings></app-loadings>
 } @else {
 @for( promotora of promotorasFiltered; track $index; let i = $index){
-@if (!planificacionService.planificacion()[indexPlanificacion]) {
+@if (Cargando) {
 <app-loadings></app-loadings>
 <br>
 }@else {
 <div class="card">
     <header class="card-header">
         <p class="card-header-title">
-            <span *ngIf="noHuboReporteAyer(promotora.nombre, promotora.apellido)" class="punto-rojo"></span> 
+            <span *ngIf="noHuboReporteAyer(promotora.nombre, promotora.apellido)"
+                class="punto-rojo"></span> <span>{{promotora.marca}}</span> - 
             <a [routerLink]="['/dashboard/promotora',promotora._id]">{{promotora.nombre}}
                 {{promotora.apellido}}</a> {{getPuntos(promotora.nombre, promotora.apellido)
-            || 0}}
+            || 0 | number: '2.2-2'}}
             puntos
             -
             {{buscarDiasTrabajados(promotora.nombre, promotora.apellido) | number}} dia(s) trabajado(s)
@@ -116,7 +118,7 @@
                         promotora.apellido, fecha); track $index){
                         @if(reporte.productos[0]){
                     <div>  ({{reporte.productos[0].marca}}) 
-                        {{reporte.totalSubtotal}} productos ({{reporte.totalPuntos}} Puntos)
+                        {{reporte.totalSubtotal}} productos ({{reporte.totalPuntos | number: '2.2-2'}} Puntos)
 
                         @if(promotora.fija){
 
@@ -241,7 +243,7 @@
                             <tr>
                                 <td>{{productos.linea}}</td>
                                 <td>{{productos.marca}}</td>
-                                <td>{{productos.producto}}</td>
+                                <td>{{productos.producto}} ({{productos.puntos}} Ptos.)</td>
                                 <td>{{productos.inicio}}</td>
                                 <td>{{productos.final}}</td>
                                 <td>{{productos.cantidad}}</td>

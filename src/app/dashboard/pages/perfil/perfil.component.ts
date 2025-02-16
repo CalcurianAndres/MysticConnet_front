@@ -43,13 +43,24 @@ export default class PerfilComponent {
   public totalPuntosMystic = 0;
   public totalCantidadQerametik = 0;
   public totalPuntosQerametik = 0;
+  public Rebrandig_porcentaje = 0;
+
+  // Crear una nueva instancia de la fecha actual
+  public hoy = new Date();
+
+  // Obtener el día, mes y año
+  public dia = String(this.hoy.getDate()).padStart(2, '0');
+  public mes = String(this.hoy.getMonth() + 1).padStart(2, '0');
+  public ano = this.hoy.getFullYear();
+
+  // Formatear la fecha en DD/MM/YYYY
+  public fechaFormateada = `${this.ano}-${this.mes}-${this.dia}`
 
   constructor() {
     this.RefreshPage();
   }
 
   BuscarCliente(e: any) {
-    console.log(e.value)
     if (e.value.trim() === '') {
       // Si el campo de búsqueda está vacío, mostrar el array vacío
       this.filteredClientes = [];
@@ -73,14 +84,16 @@ export default class PerfilComponent {
         let lastReporte = this.planificacion.planificacion()[this.planificacion.planificacion().length - 1];
         this.reportes.cargarReportes_(lastReporte.inicio, lastReporte.cierre).subscribe(
           (response) => {
+
             // Filtrar reportes por marca
             this.ReportesFiltradosMystic = response.filter((reporte) =>
               reporte.promotora._id === this.login.usuario._id &&
-              reporte.productos[0].producto.marca === 'Mystic'
+              reporte.productos[0]?.producto?.marca === 'Mystic'
             );
+
             this.ReportesFiltradosQerametik = response.filter((reporte) =>
               reporte.promotora._id === this.login.usuario._id &&
-              reporte.productos[0].producto.marca === 'Qerametik'
+              reporte.productos[0]?.producto?.marca === 'Qerametik'
             );
 
             // Inicializar acumuladores globales
@@ -88,6 +101,9 @@ export default class PerfilComponent {
             let totalPuntosMystic = 0;
             let totalCantidadQerametik = 0;
             let totalPuntosQerametik = 0;
+            let Productos_Mystic = 0;
+            let tradicional_Mystic = 0;
+            let Rebrandig = 0;
 
             // Calcular totales para Mystic
             this.ReportesFiltradosMystic.forEach((reporte: any) => {
@@ -101,6 +117,14 @@ export default class PerfilComponent {
               // Acumular globalmente
               totalCantidadMystic += cantidad;
               totalPuntosMystic += puntos;
+              reporte.productos.forEach((producto: any) => {
+                Productos_Mystic += producto.cantidad;
+                if (producto.producto.linea === 'Tradicional') {
+                  tradicional_Mystic += producto.cantidad;
+                } else if (producto.producto.linea === 'Rebranding') {
+                  Rebrandig += producto.cantidad;
+                }
+              });
             });
 
             // Calcular totales para Qerametik
@@ -122,6 +146,7 @@ export default class PerfilComponent {
             this.totalPuntosMystic = totalPuntosMystic;
             this.totalCantidadQerametik = totalCantidadQerametik;
             this.totalPuntosQerametik = totalPuntosQerametik;
+            this.Rebrandig_porcentaje = (Rebrandig / Productos_Mystic) * 100;
 
             this.loading = true;
 

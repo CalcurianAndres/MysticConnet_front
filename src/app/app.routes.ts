@@ -44,6 +44,11 @@ export const routes: Routes = [
                 loadComponent: () => import('./dashboard/pages/estadisticas/estadisticas.component'),
             },
             {
+                path: 'region/:id',
+                title: 'Región',
+                loadComponent: () => import('./dashboard/pages/region/region.component'),
+            },
+            {
                 path: 'charts',
                 title: 'Estadísticas',
                 loadComponent: () => import('./dashboard/pages/estadisticas/reportes-generales/reportes-generales.component')

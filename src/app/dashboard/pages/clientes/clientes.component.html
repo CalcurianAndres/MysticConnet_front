@@ -1,6 +1,31 @@
 @if(!loading){
 
-<div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
+<div class="modal" [ngClass]="{'is-active':detalles}">
+    <div class="modal-background" (click)="detalles = false"></div>
+    <div class="modal-card">
+        <div class="modal-card-body">
+            <table class="table is-fullwidth is-striped">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Reposición</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for(reposicion of Historial;track $index){
+                    <tr>
+                        <td>{{reposicion.fecha | date:'dd/MM/yyyy'}}</td>
+                        <td>{{reposicion.relleno}}</td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="card"
+    style="background: linear-gradient(to right, #001a72, #003c99, #005ebf, #4a9dc1, #6bcaba); color: rgb(212, 212, 212);">
     <div class="card-content">
         <app-title [title]="cliente" />
         Resumen
@@ -20,6 +45,14 @@
 
 <hr>
 
+<div class="tabs">
+    <ul>
+        <li [ngClass]="{'is-active':!almacen}" (click)="almacen = false"><a>Reportes</a></li>
+        <li [ngClass]="{'is-active':almacen}" (click)="almacen = true"><a>Inventario</a></li>
+    </ul>
+</div>
+
+@if(!almacen){
 <table class="table is-fullwidth is-striped">
     <thead>
         <tr>
@@ -48,6 +81,72 @@
         }
     </tbody>
 </table>
+} @else {
+
+<div class="title">Mystic</div>
+<table class="table is-fullwidth is-striped">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Stock Promedio</th>
+            <th>Reposición de anaquel</th>
+            <th>Detalles</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for(producto of FiltrarPorMarca('Mystic');track $index){
+        <tr>
+            <td>{{producto.producto}}</td>
+            <td>{{producto.promedioFinal | number: '1.0-0'}}</td>
+            <td>{{getReposiciones(producto.producto).length}}
+                @if(getReposiciones(producto.producto).length === 1){
+                 Vez
+                }@else {
+                 Veces
+                }
+            </td>
+            <td>
+                <button class="button is-success" (click)="verDetalles(producto.producto)">
+                    <span class="icon"><i class="fas fa-eye"></i></span>
+                </button>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+<hr>
+<div class="title">Qerametik</div>
+<table class="table is-fullwidth is-striped">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Stock Promedio</th>
+            <th>Reposición de anaquel</th>
+            <th>Detalles</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for(producto of FiltrarPorMarca('Qerametik');track $index){
+        <tr>
+            <td>{{producto.producto}}</td>
+            <td>{{producto.promedioFinal | number: '1.0-0'}}</td>
+            <td>{{getReposiciones(producto.producto).length}}
+                @if(getReposiciones(producto.producto).length === 1){
+                 Vez
+                }@else {
+                 Veces
+                }
+            </td>
+            <td>
+                <button class="button is-success" (click)="verDetalles(producto.producto)">
+                    <span class="icon"><i class="fas fa-eye"></i></span>
+                </button>
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>
+}
 } @else {
 Cargando cliente...
 }

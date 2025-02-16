@@ -57,13 +57,13 @@ export class ReportesResponseService {
           const promotoraId = reporte.promotora?._id;
 
           if (!promotoraId) {
-            console.warn('Reporte sin promotora válida:', reporte);
+            // console.warn('Reporte sin promotora válida:', reporte);
             return result;
           }
 
           // Filtrar por tipo de promotora
           if (reporte.promotora.fija !== tipoPromotora) {
-            console.warn('reportes que no coincidan con el tipoPromotora:', reporte);
+            // console.warn('reportes que no coincidan con el tipoPromotora:', reporte);
             return result; // Ignorar reportes que no coincidan con el tipoPromotora
           }
 
@@ -71,7 +71,9 @@ export class ReportesResponseService {
             result[promotoraId] = {
               promotora: `${reporte.promotora.nombre} ${reporte.promotora.apellido}`,
               marca: reporte.promotora.marca,
+              sueldo: reporte.promotora.sueldo,
               region: reporte.promotora.region,
+              porcentajeRebranding: 0,
               puntosAcumulados: 0,
               totalGastado: 0,
               productosVendidos: 0,
@@ -125,6 +127,9 @@ export class ReportesResponseService {
             0
           );
 
+          let tradicional_Mystic = 0;
+          let Rebrandig = 0;
+
           reporte.productos.forEach((prod) => {
             if (prod.producto.marca === 'Mystic') {
               result[promotoraId].productosMystic += prod.cantidad;
@@ -134,6 +139,11 @@ export class ReportesResponseService {
               } else if (reporte.tipo === 'Evento') {
                 result[promotoraId].totalEventos += prod.cantidad;
               }
+              // Calcular porcentaje de rebranding
+              if (prod.producto.linea === 'Rebranding') {
+                result[promotoraId].porcentajeRebranding += prod.cantidad;
+              }
+
             } else if (prod.producto.marca === 'Qerametik') {
               result[promotoraId].productosQerametik += prod.cantidad;
               result[promotoraId].puntosQerametik += prod.producto.puntos * prod.cantidad;
@@ -145,10 +155,14 @@ export class ReportesResponseService {
             }
           });
 
-          // Incrementar contadores de tipo
+          // Calcular porcentaje de rebranding
+          // result[promotoraId].porcentajeRebranding = (result[promotoraId].porcentajeRebranding / result[promotoraId].productosMystic) * 100;
+
+
 
           // Verificar si la promotora alcanzó la meta de 30 unidades en este reporte
           if (reporte.productos[0]) {
+
             if (reporte.promotora.fija === true) {
               if (reporte.tipo === 'Impulso') {
                 if (reporte.productos[0].producto.marca === 'Mystic') {
@@ -207,6 +221,7 @@ export class ReportesResponseService {
             observacion: reporte.observacion,
             productos: reporte.productos.map((prod) => ({
               producto: prod.producto.producto,
+              puntos: prod.producto.puntos,
               linea: prod.producto.linea,
               marca: prod.producto.marca,
               cantidad: prod.cantidad,
@@ -229,19 +244,20 @@ export class ReportesResponseService {
   }
 
   getReportesAgrupados(tipoPromotora: boolean, inicio: string, fin: string): Observable<ReporteAgrupado[]> {
+    console.log(tipoPromotora)
     return this.http.get<reportesResponse[]>(`${this.ruta}/reportes?inicio=${inicio}&fin=${fin}`).pipe(
       map((reportes) => {
         const agrupados = reportes.reduce((result, reporte) => {
           const promotoraId = reporte.promotora?._id;
 
           if (!promotoraId) {
-            console.warn('Reporte sin promotora válida:', reporte);
+            // console.warn('Reporte sin promotora válida:', reporte);
             return result;
           }
 
           // Filtrar por tipo de promotora
           if (reporte.promotora.fija !== tipoPromotora) {
-            console.warn('reportes que no coincidan con el tipoPromotora:', reporte);
+            // console.warn('reportes que no coincidan con el tipoPromotora:', reporte);
             return result; // Ignorar reportes que no coincidan con el tipoPromotora
           }
 
@@ -249,7 +265,9 @@ export class ReportesResponseService {
             result[promotoraId] = {
               promotora: `${reporte.promotora.nombre} ${reporte.promotora.apellido}`,
               marca: reporte.promotora.marca,
+              sueldo: reporte.promotora.sueldo,
               region: reporte.promotora.region,
+              porcentajeRebranding: 0,
               puntosAcumulados: 0,
               totalGastado: 0,
               productosVendidos: 0,
@@ -288,19 +306,29 @@ export class ReportesResponseService {
             0
           );
 
+          let tradicional_Mystic = 0;
+          let Rebrandig = 0;
+
           reporte.productos.forEach((prod) => {
             if (prod.producto.marca === 'Mystic') {
               result[promotoraId].productosMystic += prod.cantidad;
               result[promotoraId].puntosMystic += prod.producto.puntos * prod.cantidad;
+              if (prod.producto.linea === 'Tradicional') {
+                tradicional_Mystic += prod.cantidad;
+              } else if (prod.producto.linea === 'Rebranding') {
+                Rebrandig += prod.cantidad;
+              }
             } else if (prod.producto.marca === 'Qerametik') {
               result[promotoraId].productosQerametik += prod.cantidad;
               result[promotoraId].puntosQerametik += prod.producto.puntos * prod.cantidad;
             }
           });
 
+
           result[promotoraId].puntosAcumulados += puntosReporte;
           result[promotoraId].totalGastado += precioReporte;
           result[promotoraId].productosVendidos += cantidadProductos;
+          result[promotoraId].porcentajeRebranding = (Rebrandig / result[promotoraId].productosMystic) * 100;
 
           result[promotoraId].reportes.push({
             cliente: reporte.cliente.cliente,
@@ -309,6 +337,7 @@ export class ReportesResponseService {
             observacion: reporte.observacion,
             productos: reporte.productos.map((prod) => ({
               producto: prod.producto.producto,
+              puntos: prod.producto.puntos,
               linea: prod.producto.linea,
               marca: prod.producto.marca,
               cantidad: prod.cantidad,

@@ -11,6 +11,8 @@ import { ReportesResponseService } from '@services/reportes-response.service';
 import { UserResponseService } from '@services/user-response.service';
 import { LoadingsComponent } from '@shared/loadings/loadings.component';
 import { TitleComponent } from '@shared/title/title.component';
+import Chart, { ChartType } from 'chart.js/auto';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-promotoras',
@@ -53,6 +55,12 @@ export default class PromotorasComponent {
   public indexPlanificacion: number = 0;
   public Separado_por_clientes: any = [];
 
+  public marcas_chart!: Chart;
+  public lineas_chart!: Chart;
+
+  public linea!: any;
+  public marcas!: any;
+
   constructor(private route: ActivatedRoute) {
     this.route.paramMap.subscribe(params => {
       const id = params.get('id');
@@ -84,11 +92,22 @@ export default class PromotorasComponent {
   }
 
   RefreshPage() {
+    if (this.lineas_chart) this.lineas_chart.destroy();
+    if (this.marcas_chart) this.marcas_chart.destroy();
     setTimeout(() => {
       if (!this.planificacion.loading()) {
         let lastReporte = this.planificacion.planificacion()[this.indexPlanificacion];
         this.reportes.cargarReportes_(lastReporte.inicio, lastReporte.cierre).subscribe(
           (response) => {
+
+            const canvasMarcas = document.getElementById('marcas') as HTMLCanvasElement;
+            const canvasLineas = document.getElementById('lineas') as HTMLCanvasElement;
+
+            let Productos_Mystic = 0;
+            let Productos_Qerametik = 0;
+            let tradicional_Mystic = 0
+            let tradicional_Qerametik = 0
+            let Rebrandig = 0
 
             // Filtrar reportes por marca
             this.ReportesFiltradosMystic = response.filter((reporte) =>
@@ -107,6 +126,13 @@ export default class PromotorasComponent {
             let totalCantidadQerametik = 0;
             let totalPuntosQerametik = 0;
 
+
+
+
+
+
+
+
             // Calcular totales para Mystic
             this.ReportesFiltradosMystic.forEach((reporte: any) => {
               const cantidad = reporte.productos.reduce((sum: any, producto: any) => sum + producto.cantidad, 0);
@@ -119,6 +145,15 @@ export default class PromotorasComponent {
               // Acumular globalmente
               totalCantidadMystic += cantidad;
               totalPuntosMystic += puntos;
+
+              reporte.productos.forEach((producto: any) => {
+                Productos_Mystic += producto.cantidad;
+                if (producto.producto.linea === 'Tradicional') {
+                  tradicional_Mystic += producto.cantidad;
+                } else if (producto.producto.linea === 'Rebranding') {
+                  Rebrandig += producto.cantidad;
+                }
+              });
             });
 
             // Calcular totales para Qerametik
@@ -133,6 +168,184 @@ export default class PromotorasComponent {
               // Acumular globalmente
               totalCantidadQerametik += cantidad;
               totalPuntosQerametik += puntos;
+
+              reporte.productos.forEach((producto: any) => {
+                Productos_Qerametik += producto.cantidad;
+                if (producto.producto.linea === 'Tradicional') {
+                  tradicional_Qerametik += producto.cantidad;
+                }
+              });
+            });
+
+            let total_ventas = tradicional_Mystic + Rebrandig;
+            let tradicional_Mystic_porcentaje = (tradicional_Mystic / total_ventas) * 100;
+            let Rebrandig_porcentaje = (Rebrandig / total_ventas) * 100;
+
+            this.linea = {
+              labels: [
+                `Tradicional Mystic (${tradicional_Mystic_porcentaje.toFixed(2)}%)`,
+                `Tradicional Qerametik`,
+                `Rebranding (${Rebrandig_porcentaje.toFixed(2)}%)`
+              ],
+              datasets: [{
+                label: 'Productos vendidos',
+                data: [tradicional_Mystic, tradicional_Qerametik, Rebrandig],
+                backgroundColor: [
+                  '#001a72',
+                  '#6bcaba',
+                  '#fe5000'
+                ],
+                borderColor: [
+                  '#fe5000',
+                  '#c99700',
+                  '#001a72'
+                ],
+                hoverOffset: 4
+              }]
+            }
+
+            const customDoughnutLabelsPlugin_lineas = {
+              id: 'customDoughnutLabels',
+              afterDatasetsDraw(chart: any) {
+                const { ctx, data } = chart; // Contexto y datos del gráfico
+                const dataset = data.datasets[0]; // Obtén el primer dataset
+
+                chart.getDatasetMeta(0).data.forEach((arc: any, index: any) => {
+                  const value = dataset.data[index]; // Valor del segmento
+                  const label = data.labels[index]; // Etiqueta del segmento
+
+                  const { x, y } = arc.tooltipPosition(); // Posición central del arco
+
+                  ctx.save();
+
+                  // Fondo blanco detrás del texto
+                  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // Fondo semitransparente
+                  const padding = 6; // Espaciado alrededor del texto
+                  const textWidth = ctx.measureText(value).width;
+                  const textHeight = 14; // Altura aproximada de la fuente
+                  ctx.fillRect(
+                    x - textWidth / 2 - padding / 2, // Posición izquierda del fondo
+                    y - textHeight / 2 - padding / 2, // Posición superior del fondo
+                    textWidth + padding, // Ancho del fondo
+                    textHeight + padding // Altura del fondo
+                  );
+
+                  // Borde alrededor del texto (opcional)
+                  ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                  ctx.lineWidth = 1;
+                  ctx.strokeRect(
+                    x - textWidth / 2 - padding / 2,
+                    y - textHeight / 2 - padding / 2,
+                    textWidth + padding,
+                    textHeight + padding
+                  );
+
+                  // Texto
+                  ctx.fillStyle = '#000'; // Color del texto
+                  ctx.font = '12px Arial'; // Fuente del texto
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  ctx.fillText(value, x, y);
+
+                  ctx.restore();
+                });
+              },
+            };
+
+            this.lineas_chart = new Chart(canvasLineas, {
+              type: 'doughnut',
+              data: this.linea,
+              options: {
+                plugins: {
+                  legend: {
+                    display: true, // Muestra la leyenda
+                  },
+                },
+              },
+              plugins: [customDoughnutLabelsPlugin_lineas],
+            });
+
+
+            this.marcas = {
+              labels: [
+                'Mystic',
+                'Qerametik',
+              ],
+              datasets: [{
+                label: 'Productos vendidos',
+                data: [Productos_Mystic, Productos_Qerametik],
+                backgroundColor: [
+                  '#001a72',
+                  '#6bcaba',
+                ],
+                borderColor: [
+                  '#fe5000',
+                  '#c99700',
+                ],
+                hoverOffset: 4
+              }]
+            };
+
+
+            const customDoughnutLabelsPlugin = {
+              id: 'customDoughnutLabels',
+              afterDatasetsDraw(chart: any) {
+                const { ctx, data } = chart; // Contexto y datos del gráfico
+                const dataset = data.datasets[0]; // Obtén el primer dataset
+
+                chart.getDatasetMeta(0).data.forEach((arc: any, index: any) => {
+                  const value = dataset.data[index]; // Valor del segmento
+                  const label = data.labels[index]; // Etiqueta del segmento
+
+                  const { x, y } = arc.tooltipPosition(); // Posición central del arco
+
+                  ctx.save();
+
+                  // Fondo blanco detrás del texto
+                  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // Fondo semitransparente
+                  const padding = 6; // Espaciado alrededor del texto
+                  const textWidth = ctx.measureText(value).width;
+                  const textHeight = 14; // Altura aproximada de la fuente
+                  ctx.fillRect(
+                    x - textWidth / 2 - padding / 2, // Posición izquierda del fondo
+                    y - textHeight / 2 - padding / 2, // Posición superior del fondo
+                    textWidth + padding, // Ancho del fondo
+                    textHeight + padding // Altura del fondo
+                  );
+
+                  // Borde alrededor del texto (opcional)
+                  ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                  ctx.lineWidth = 1;
+                  ctx.strokeRect(
+                    x - textWidth / 2 - padding / 2,
+                    y - textHeight / 2 - padding / 2,
+                    textWidth + padding,
+                    textHeight + padding
+                  );
+
+                  // Texto
+                  ctx.fillStyle = '#000'; // Color del texto
+                  ctx.font = '12px Arial'; // Fuente del texto
+                  ctx.textAlign = 'center';
+                  ctx.textBaseline = 'middle';
+                  ctx.fillText(value, x, y);
+
+                  ctx.restore();
+                });
+              },
+            };
+
+            this.marcas_chart = new Chart(canvasMarcas, {
+              type: 'doughnut',
+              data: this.marcas,
+              options: {
+                plugins: {
+                  legend: {
+                    display: true, // Muestra la leyenda
+                  },
+                },
+              },
+              plugins: [customDoughnutLabelsPlugin],
             });
 
             // Guardar los valores globales
@@ -142,15 +355,6 @@ export default class PromotorasComponent {
             this.totalPuntosQerametik = totalPuntosQerametik;
 
             this.loading = true;
-
-            console.log('Total Mystic:', {
-              cantidad: this.totalCantidadMystic,
-              puntos: this.totalPuntosMystic
-            });
-            console.log('Total Qerametik:', {
-              cantidad: this.totalCantidadQerametik,
-              puntos: this.totalPuntosQerametik
-            });
 
             this.Separado_por_clientes = this.agruparYCalcularTotales(response.filter((r: any) => r.promotora._id === this.perfil._id))
 
@@ -197,6 +401,40 @@ export default class PromotorasComponent {
       this.EditarReporte = !this.EditarReporte;
       this.ReporteSeleccionado = this.ReportesFiltradosMystic.find((r: any) => r._id === reporte); // Comparando el _id de cada reporte
       this.MarcaSelected = this.ReporteSeleccionado.productos[0].producto.marca;
+      Swal.fire({
+        title: "¿Quieres eliminar este reporte?",
+        icon: "question",
+        showDenyButton: true,
+        showCancelButton: false,
+        confirmButtonText: "Eliminar",
+        denyButtonText: `No, conservar`
+      }).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          this.ReporteSeleccionado.borrado = true;
+          this.reportes.NuevoReporte(this.ReporteSeleccionado);
+          Swal.fire({
+            timer: 2000,
+            icon: 'success',
+            title: 'Reporte eliminado',
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end',
+            timerProgressBar: true
+          })
+          this.RefreshPage();
+        } else if (result.isDenied) {
+          Swal.fire({
+            timer: 2000,
+            icon: 'info',
+            title: 'No hubo cambios',
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end',
+            timerProgressBar: true
+          })
+        }
+      });
     }, 500);
   }
 
@@ -205,7 +443,67 @@ export default class PromotorasComponent {
       this.EditarReporte = !this.EditarReporte;
       this.ReporteSeleccionado = this.ReportesFiltradosQerametik.find((r: any) => r._id === reporte); // Comparando el _id de cada reporte
       this.MarcaSelected = this.ReporteSeleccionado.productos[0].producto.marca;
+      Swal.fire({
+        title: "¿Quieres eliminar este reporte?",
+        icon: "question",
+        showDenyButton: true,
+        showCancelButton: false,
+        confirmButtonText: "Eliminar",
+        denyButtonText: `No, conservar`
+      }).then((result) => {
+        /* Read more about isConfirmed, isDenied below */
+        if (result.isConfirmed) {
+          this.ReporteSeleccionado.borrado = true;
+          this.reportes.NuevoReporte(this.ReporteSeleccionado);
+          Swal.fire({
+            timer: 2000,
+            icon: 'success',
+            title: 'Reporte eliminado',
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end',
+            timerProgressBar: true
+          })
+          this.RefreshPage();
+        } else if (result.isDenied) {
+          Swal.fire({
+            timer: 2000,
+            icon: 'info',
+            title: 'No hubo cambios',
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end',
+            timerProgressBar: true
+          })
+        }
+      });
     }, 500);
+  }
+
+  BorrarReporte(reporte: any) {
+    Swal.fire({
+      title: "¿Reportar ventas de hoy?",
+      text: "Recuerda verificar bien las cantidades que declaras y los productos seleccionados",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Reportar!"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: "Listo",
+          text: "La información fue enviada con exito",
+          icon: "success",
+          showConfirmButton: false,
+          timer: 5000,
+          toast: true,
+          timerProgressBar: true,
+          position: 'top-end'
+        });
+
+      }
+    });
   }
 
   // Método para filtrar los productos según el nombre

@@ -58,9 +58,25 @@ export default class ReporteComponent {
   public estab: boolean = false;
   public planificado: boolean = false;
 
+  public Mystic = [
+    '67a4be3b083a2a1da679226d', '676c251affcb9efdbafe02f4', '676c251affcb9efdbafe02f5', '67a4bf5a083a2a1da6792270', '676c251affcb9efdbafe02f7', '676c251affcb9efdbafe02f8', '676c251affcb9efdbafe02f9', '67a4bfb2083a2a1da6792272', '67a4bfff083a2a1da6792274', '676c251affcb9efdbafe02fa', '676c251affcb9efdbafe02fb', '676c251affcb9efdbafe02fc', '676c251affcb9efdbafe02fd',
+    '676c251affcb9efdbafe02fe', '676c251affcb9efdbafe02ff', '676c251affcb9efdbafe0300', '67a4c080083a2a1da6792277', '67a4c0b4083a2a1da6792279', '67a4c0e0083a2a1da679227b', '67a4c11a083a2a1da679227d', '67a4c142083a2a1da679227f', '67a4c15c083a2a1da6792281', '67a4c1b1083a2a1da6792283', '67a4c1cb083a2a1da6792285',
+    '67a4c23a083a2a1da6792288', '67a4c254083a2a1da679228a', '67a4c278083a2a1da679228c', '67a4c29c083a2a1da679228e', '67a4c2c3083a2a1da6792290', '67a4c2e0083a2a1da6792292', '67a4c304083a2a1da6792294', '67a4c370083a2a1da6792296', '67a4c397083a2a1da6792298', '67a4c3c0083a2a1da679229a', '67a4c3e7083a2a1da679229c',
+    '67a4c405083a2a1da679229e'
+  ]
+
+  public Qerametik = [
+    '67a4c7cf083a2a1da67922a3', '676c251affcb9efdbafe02d6', '67a4c7ea083a2a1da67922a5', '67a56a81083a2a1da67af599', '67a56a95083a2a1da67af59b', '676c251affcb9efdbafe02d8', '676c251affcb9efdbafe02d9', '676c251affcb9efdbafe02da', '676c251affcb9efdbafe02db', '676c251affcb9efdbafe02dc', '676c251affcb9efdbafe02dd', '676c251affcb9efdbafe02de'
+  ]
+
   constructor() {
     this.date_log = this.getFormattedDate()
     this.date_aja = new Date();
+    // setTimeout(() => {
+    //   for (let i = 0; i < this.Mystic.length; i++) {
+    //     this.agregarProducto(this.Mystic[i]);
+    //   }
+    // }, 1000);
   }
 
   addCliente(cliente: any) {
@@ -147,6 +163,7 @@ export default class ReporteComponent {
     const productoDB: any = this.ProductosServices.productos().find(producto => producto._id === index);
 
     if (!productoDB) {
+      console.log(index)
       console.error('Producto no encontrado');
       return; // Detener ejecución si no se encuentra el producto
     }
@@ -164,7 +181,7 @@ export default class ReporteComponent {
 
 
   VerificarReporte() {
-    return this.ProductosSelected.every(p => p.inicial > 0 && (p.inicial > 0 && p.final <= p.inicial))
+    return this.ProductosSelected.some(p => p.inicial > 0 && (p.inicial > 0 && p.final <= p.inicial))
   }
 
   eliminarDeProductosSelected(index: number) {
@@ -316,6 +333,17 @@ export default class ReporteComponent {
     this.estab = false;
     this.planificado = false
     setTimeout(() => {
+      this.ProductosSelected = [];
+      if (this.marca_seleccionada === 'Mystic') {
+        for (let i = 0; i < this.Mystic.length; i++) {
+          this.agregarProducto(this.Mystic[i]);
+        }
+      } else if (this.marca_seleccionada === 'Qerametik') {
+        for (let i = 0; i < this.Qerametik.length; i++) {
+          this.agregarProducto(this.Qerametik[i]);
+        }
+      }
+
       if (this.planification(this.date_aja, this.loginSevice.usuario.nombre)) {
         let nombre = this.planification(this.date_aja, this.loginSevice.usuario.nombre).cliente_nombre
         this.establecimiento = this.ClientServices.clientes().find(c => c.marca === this.marca_seleccionada && c.cliente === nombre)?._id
@@ -325,6 +353,7 @@ export default class ReporteComponent {
         }
         this.estab = true;
       } else {
+
         this.estab = true
       }
     }, 1000);

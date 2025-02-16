@@ -65,8 +65,12 @@ export default class GraficasComponent {
     this.vendedoras_chart.destroy();
     this.vendedoras_qerametik.destroy();
     this.lineas_chart.destroy();
-    this.top3_chart.destroy();
-    this.top3_chart_Qerametik.destroy();
+    if (this.top3_chart) {
+      this.top3_chart.destroy();
+    }
+    if (this.top3_chart_Qerametik) {
+      this.top3_chart_Qerametik.destroy();
+    }
     this.recargarInfo();
   }
 
@@ -83,7 +87,6 @@ export default class GraficasComponent {
     setTimeout(() => {
       if (!this.planificacionService.loading()) {
         this.Cargado = true;
-        console.log(this.fijas)
         const canvasVendedoras = document.getElementById('vendedoras') as HTMLCanvasElement;
         const canvasVendedorasQerametik = document.getElementById('vendedoras_Qerametik') as HTMLCanvasElement;
         const canvasMarcas = document.getElementById('marcas') as HTMLCanvasElement;
@@ -95,24 +98,116 @@ export default class GraficasComponent {
           this.Reportes = res;
           console.log(res)
 
-          const labels: string[] = [];
-          const data: number[] = [];
-          const labels_Mystic: string[] = [];
-          const data_Mystic: number[] = [];
+          let labels: string[] = [];
+          let data: number[] = [];
+          let labels_Mystic: string[] = [];
+          let data_Mystic: number[] = [];
 
+
+          // Procesar promotoras de Qerametik
           this.promotoras.users()
-            .filter(promotora => promotora.fija === this.fijas && promotora.marca === 'Qerametik') // Filtrar solo donde fija = true
+            .filter(promotora => promotora.fija === this.fijas && promotora.marca === 'Qerametik')
             .forEach((promotora) => {
               labels.push(`${promotora.nombre} ${promotora.apellido}`);
-              data.push(this.getPuntos(promotora.nombre, promotora.apellido)); // Cambiar por puntosAcumulados si es necesario
+              data.push(this.getProductos_Mystic(promotora.nombre, promotora.apellido)); // Cambiar por puntosAcumulados si es necesario
             });
 
+          // Ordenar Qerametik por data (valores)
+          const sortedQerametik = labels.map((label, index) => ({
+            label,
+            value: data[index]
+          })).sort((a, b) => b.value - a.value);
+
+          // Actualizar labels y data ordenados para Qerametik
+          labels = sortedQerametik.map(item => item.label);
+          data = sortedQerametik.map(item => item.value);
+
+          // Procesar promotoras de Mystic
           this.promotoras.users()
-            .filter(promotora => promotora.fija === this.fijas && promotora.marca === 'Mystic') // Filtrar solo donde fija = true
+            .filter(promotora => promotora.fija === this.fijas && promotora.marca === 'Mystic')
             .forEach((promotora) => {
               labels_Mystic.push(`${promotora.nombre} ${promotora.apellido}`);
-              data_Mystic.push(this.getPuntos(promotora.nombre, promotora.apellido)); // Cambiar por puntosAcumulados si es necesario
+              data_Mystic.push(this.getProductos_Qerametik(promotora.nombre, promotora.apellido)); // Cambiar por puntosAcumulados si es necesario
             });
+
+          // Ordenar Mystic por data_Mystic (valores)
+          const sortedMystic = labels_Mystic.map((label, index) => ({
+            label,
+            value: data_Mystic[index]
+          })).sort((a, b) => b.value - a.value);
+
+          // Actualizar labels_Mystic y data_Mystic ordenados para Mystic
+          labels_Mystic = sortedMystic.map(item => item.label);
+          data_Mystic = sortedMystic.map(item => item.value);
+
+          const customDataLabelsPlugin_Qerametik = {
+            id: 'customDataLabelsQerametik',
+            afterDatasetsDraw(chart: any) {
+              const { ctx, data } = chart;
+              chart.data.datasets.forEach((dataset: any, datasetIndex: any) => {
+                const meta = chart.getDatasetMeta(datasetIndex);
+                meta.data.forEach((bar: any, index: any) => {
+                  const value = dataset.data[index];
+                  ctx.save();
+                  ctx.font = '12px Arial';
+                  ctx.fillStyle = '#000';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(value, bar.x, bar.y - 10); // Ajusta 'bar.y - 10' para la posición
+                  ctx.restore();
+                });
+              });
+            },
+          };
+
+
+          const customDoughnutLabelsPlugin = {
+            id: 'customDoughnutLabels',
+            afterDatasetsDraw(chart: any) {
+              const { ctx, data } = chart; // Contexto y datos del gráfico
+              const dataset = data.datasets[0]; // Obtén el primer dataset
+
+              chart.getDatasetMeta(0).data.forEach((arc: any, index: any) => {
+                const value = dataset.data[index]; // Valor del segmento
+                const label = data.labels[index]; // Etiqueta del segmento
+
+                const { x, y } = arc.tooltipPosition(); // Posición central del arco
+
+                ctx.save();
+
+                // Fondo blanco detrás del texto
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.8)'; // Fondo semitransparente
+                const padding = 6; // Espaciado alrededor del texto
+                const textWidth = ctx.measureText(value).width;
+                const textHeight = 14; // Altura aproximada de la fuente
+                ctx.fillRect(
+                  x - textWidth / 2 - padding / 2, // Posición izquierda del fondo
+                  y - textHeight / 2 - padding / 2, // Posición superior del fondo
+                  textWidth + padding, // Ancho del fondo
+                  textHeight + padding // Altura del fondo
+                );
+
+                // Borde alrededor del texto (opcional)
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(
+                  x - textWidth / 2 - padding / 2,
+                  y - textHeight / 2 - padding / 2,
+                  textWidth + padding,
+                  textHeight + padding
+                );
+
+                // Texto
+                ctx.fillStyle = '#000'; // Color del texto
+                ctx.font = '12px Arial'; // Fuente del texto
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(value, x, y);
+
+                ctx.restore();
+              });
+            },
+          };
+
 
           this.vendedoras_qeral = {
             labels: labels,
@@ -423,11 +518,27 @@ export default class GraficasComponent {
           this.vendedoras_chart = new Chart(canvasVendedoras, {
             type: 'bar',  // o 'line', dependiendo del tipo de gráfico
             data: this.vendedoras,
+            options: {
+              plugins: {
+                legend: {
+                  display: true,
+                },
+              },
+            },
+            plugins: [customDataLabelsPlugin_Qerametik],
           });
 
           this.vendedoras_qerametik = new Chart(canvasVendedorasQerametik, {
             type: 'bar',
-            data: this.vendedoras_qeral
+            data: this.vendedoras_qeral,
+            options: {
+              plugins: {
+                legend: {
+                  display: true,
+                },
+              },
+            },
+            plugins: [customDataLabelsPlugin_Qerametik],
           })
 
 
@@ -435,10 +546,13 @@ export default class GraficasComponent {
             .subscribe(res => {
               let reportes_ = res;
 
+              reportes_ = reportes_.filter(r => r.promotora.fija === this.fijas)
+
               let cantidadMystic = 0;
               let cantidadQerametik = 0;
               let cantidadTradicional = 0;
               let cantidadRebranding = 0;
+              let cantidadTradicionalQerametik = 0;
 
               // Objeto para acumular las ventas por promotora
               const ventasPorPromotora: { [promotoraId: string]: number } = {};
@@ -471,13 +585,13 @@ export default class GraficasComponent {
                 if (reporte.promotora.marca === 'Mystic') {
                   reporte.productos.forEach((item: any) => {
                     if (item.producto.marca === 'Mystic') {
-                      ventasPorPromotoraPorMarca[promotoraId].Mystic += item.cantidad * item.producto.puntos;
+                      ventasPorPromotoraPorMarca[promotoraId].Mystic += item.cantidad;
                     }
                   });
                 } else if (reporte.promotora.marca === 'Qerametik') {
                   reporte.productos.forEach((item: any) => {
                     if (item.producto.marca === 'Qerametik') {
-                      ventasPorPromotoraPorMarca[promotoraId].Qerametik += item.cantidad * item.producto.puntos;
+                      ventasPorPromotoraPorMarca[promotoraId].Qerametik += item.cantidad;
                     }
                   });
                 }
@@ -515,6 +629,12 @@ export default class GraficasComponent {
                     } else {
                       ventasPorProductoMystic[item.producto._id] = { nombre: item.producto.producto, cantidad: item.cantidad, linea: item.producto.linea };
                     }
+                    // Contar la cantidad por línea
+                    if (item.producto.linea === 'Tradicional') {
+                      cantidadTradicional += item.cantidad;
+                    } else if (item.producto.linea === 'Rebranding') {
+                      cantidadRebranding += item.cantidad;
+                    }
                   } else if (item.producto.marca === 'Qerametik') {
                     cantidadQerametik += item.cantidad;
                     // Acumular ventas por producto de Qerametik
@@ -523,13 +643,10 @@ export default class GraficasComponent {
                     } else {
                       ventasPorProductoQerametik[item.producto._id] = { nombre: item.producto.producto, cantidad: item.cantidad, linea: item.producto.linea };
                     }
+                    // Contar la cantidad por línea
+                    cantidadTradicionalQerametik += item.cantidad;
                   }
-                  // Contar la cantidad por línea
-                  if (item.producto.linea === 'Tradicional') {
-                    cantidadTradicional += item.cantidad;
-                  } else if (item.producto.linea === 'Rebranding') {
-                    cantidadRebranding += item.cantidad;
-                  }
+
 
                   // Acumular ventas por promotora
                   const promotoraId = `${reporte.promotora.nombre} ${reporte.promotora.apellido}`; // Nombre completo de la promotora
@@ -543,7 +660,7 @@ export default class GraficasComponent {
               })
 
 
-              // Ordenar los productos más vendidos por Mystic y obtener el top 3
+              // Ordenar los productos más vendidos por Mystic y obtener el top 3 (excluyendo 'Aguas 90ml' y 'Aguas 60ml y 120ml')
               const top3ProductosMystic = Object.entries(ventasPorProductoMystic)
                 .map(([productoId, datos]) => ({
                   productoId,
@@ -552,9 +669,9 @@ export default class GraficasComponent {
                   cantidad: datos.cantidad,
                 }))
                 .sort((a, b) => b.cantidad - a.cantidad) // Ordenar por cantidad de mayor a menor
-                .slice(0, 3); // Obtener los 3 principales
+                .slice(0, 5); // Obtener los 3 principales
 
-              // Ordenar los productos más vendidos por Qerametik y obtener el top 3
+              // Ordenar los productos más vendidos por Qerametik y obtener el top 3 (excluyendo 'Aguas 90ml' y 'Aguas 60ml y 120ml')
               const top3ProductosQerametik = Object.entries(ventasPorProductoQerametik)
                 .map(([productoId, datos]) => ({
                   productoId,
@@ -562,8 +679,9 @@ export default class GraficasComponent {
                   nombre: datos.nombre,
                   cantidad: datos.cantidad,
                 }))
+                // Filtrar los productos excluidos
                 .sort((a, b) => b.cantidad - a.cantidad) // Ordenar por cantidad de mayor a menor
-                .slice(0, 3); // Obtener los 3 principales
+                .slice(0, 5); // Obtener los 3 principales
 
               // Asignar los resultados a variables para la vista
               this.topProductos = {
@@ -605,24 +723,35 @@ export default class GraficasComponent {
 
               this.marcas_chart = new Chart(canvasMarcas, {
                 type: 'doughnut',
-                data: this.marcas
+                data: this.marcas,
+                options: {
+                  plugins: {
+                    legend: {
+                      display: true, // Muestra la leyenda
+                    },
+                  },
+                },
+                plugins: [customDoughnutLabelsPlugin],
               });
 
               this.lineas = {
                 labels: [
                   'Tradicional',
+                  'Tradicional Qerametik',
                   'Rebranding',
                 ],
                 datasets: [{
                   label: 'Marca mas vendida',
-                  data: [cantidadTradicional, cantidadRebranding],
+                  data: [cantidadTradicional, cantidadTradicionalQerametik, cantidadRebranding],
                   backgroundColor: [
                     '#001a72',
                     '#6bcaba',
+                    '#fe5000',
                   ],
                   borderColor: [
                     '#fe5000',
                     '#c99700',
+                    '#001a72',
                   ],
                   hoverOffset: 4
                 }]
@@ -630,7 +759,15 @@ export default class GraficasComponent {
 
               this.lineas_chart = new Chart(canvasLineas, {
                 type: 'doughnut',
-                data: this.lineas
+                data: this.lineas,
+                options: {
+                  plugins: {
+                    legend: {
+                      display: true, // Muestra la leyenda
+                    },
+                  },
+                },
+                plugins: [customDoughnutLabelsPlugin],
               });
 
               // Suponiendo que contarTotalesPorMarcaYLinea devuelve un objeto con top3Promotoras
@@ -694,7 +831,13 @@ export default class GraficasComponent {
                 data: this.top3,
                 options: {
                   indexAxis: 'y',
-                }
+                  plugins: {
+                    legend: {
+                      display: true,
+                    },
+                  },
+                },
+                plugins: [customDataLabelsPlugin_Qerametik],
               });
 
               this.top3_chart_Qerametik = new Chart(canvasTop3Qera, {
@@ -702,11 +845,18 @@ export default class GraficasComponent {
                 data: this.top3_Qera,
                 options: {
                   indexAxis: 'y',
-                }
+                  plugins: {
+                    legend: {
+                      display: true,
+                    },
+                  },
+                },
+                plugins: [customDataLabelsPlugin_Qerametik],
               })
 
 
               // FINAL
+              this.Cargado = false;
             });
 
 
@@ -722,5 +872,14 @@ export default class GraficasComponent {
     return reporte ? reporte.puntosAcumulados : 0;
   }
 
+  getProductos_Mystic(nombre: string, apellido: string): number {
+    const reporte = this.Reportes.find(r => r.promotora === `${nombre} ${apellido}`);
+    return reporte ? reporte.productosQerametik : 0;
+  }
+
+  getProductos_Qerametik(nombre: string, apellido: string): number {
+    const reporte = this.Reportes.find(r => r.promotora === `${nombre} ${apellido}`);
+    return reporte ? reporte.productosMystic : 0;
+  }
 
 }

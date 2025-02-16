@@ -28,7 +28,8 @@
 
 <div class=" formulario_envio_informacion">
 
-    <div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
+    <div class="card"
+        style="background: linear-gradient(to right, #001a72, #003c99, #005ebf, #4a9dc1, #6bcaba); color: rgb(212, 212, 212);">
         <div class="card-content">
             <span class="title" style="color: rgb(212, 212, 212);">
                 {{loginSevice.usuario.nombre}} {{loginSevice.usuario.apellido}}
@@ -178,65 +179,31 @@
     @if (CargadaInformacion()) {
     <div class="card">
         <div class="card-content">
-            <div class="field">
-                <div class="control">
-                    <label for="" class="label">Buscado de productos</label>
-                    <input type="text" class="input" placeholder="Buscar producto" [(ngModel)]="searchTerm"
-                        (input)="filterProductos()">
-                </div>
-            </div>
-            <!-- <div class="field">
-                <div class="control">
-                    <label for="" class="label"> </label>
-                    <input type="checkbox" [(ngModel)]="usarListaAntigua" (click)="filterProductos()"> Utilizar
-                    lista
-                    antigua
-                </div>
-            </div> -->
             <hr>
-            <table class="table is-fullwidth is-hoverable is-striped">
-                <thead>
-                    @for (producto of filteredProductos; track $index) {
-                    <tr>
-                        <td style="width: 15px;">
-                            <button class=" button is-success is-small is-outlined" style="border: none;"
-                                (click)="agregarProducto(producto._id)">
-                                <span class="icon"><i class="fas fa-plus-square"></i></span>
-                            </button>
-                        </td>
-                        <td>{{producto.producto}} ({{producto.linea}})</td>
-                    </tr>
-                    }
-                </thead>
-            </table>
             <table class="table is-fullwidth is-striped">
                 @if(ProductosSelected.length > 0){
                 <thead>
                     <tr>
-                        <th></th>
+                        <!-- <th></th> -->
                         <th>Producto</th>
                         <th>Alm. Inicial</th>
                         <th>Alm. Final</th>
+                        <th>Vendido</th>
                     </tr>
                 </thead>
                 }
                 <tbody>
                     @for (productoAgregado of ProductosSelected; track $index) {
                     <tr>
-                        <td style="width: 15px;">
-                            <button class=" button is-danger is-small is-outlined" style="border: none;"
-                                (click)="eliminarDeProductosSelected($index)">
-                                <span class="icon"><i class="fas fa-trash-alt"></i></span>
-                            </button>
-                        </td>
                         <td>{{productoAgregado.producto.marca}} - {{productoAgregado.producto.producto}}
-                            ({{productoAgregado.producto.linea}})</td>
+                            ({{productoAgregado.producto.linea}}) - {{productoAgregado.producto.puntos}} Pts.</td>
                         <td style="width: 100px"><input type="number" class="input" placeholde="Cantidad vendida"
                                 [(ngModel)]="productoAgregado.inicial"></td>
                         <td style="width: 100px">
                             <input type="number" class="input" placeholde="Cantidad vendida"
                                 [(ngModel)]="productoAgregado.final">
                         </td>
+                        <td>{{productoAgregado.inicial - productoAgregado.final}} Und.</td>
                     </tr>
                     } @empty {
                     <div class="notification is-primary is-light">

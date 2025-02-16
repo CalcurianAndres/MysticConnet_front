@@ -1,4 +1,5 @@
 <div class="modal" [ngClass]="{'is-active':active}">
+
     <div class="modal-background"></div>
     <div class="modal-card">
         <header class="modal-card-head">
@@ -14,6 +15,15 @@
                 <div class="control">
                     <label for="" class="label">Apellido:</label>
                     <input type="text" class="input" [(ngModel)]="data.apellido">
+                </div>
+                <div class="control">
+                    <label for="" class="label">Marca:</label>
+                    <div class="select">
+                        <select [(ngModel)]="data.marca">
+                            <option value="Mystic">Mystic</option>
+                            <option value="Qerametik">Qerametik</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             <div class="field is-grouped">
@@ -43,6 +53,15 @@
                             <option value="Promotora">Promotora</option>
                             <option value="coordinadora">Coordinadora</option>
                             <option value="Ejecutiva">Ejecutiva</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="control">
+                    <label for="" class="label">tipo:</label>
+                    <div class="select">
+                        <select (change)="verificar($event)" [(ngModel)]="fija">
+                            <option value="Fija">Fija</option>
+                            <option value="Destajo">Destajo</option>
                         </select>
                     </div>
                 </div>

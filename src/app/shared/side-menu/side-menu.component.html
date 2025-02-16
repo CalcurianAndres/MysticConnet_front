@@ -79,6 +79,11 @@
         </a>
 
         <div class="navbar-dropdown">
+          @if(LoginService.usuario.role != 'Promotora'){
+          <a class="navbar-item" routerLink="planificacion">
+            Planificación
+          </a>
+          }
           <a class="navbar-item" routerLink="reportes">
             Reportar
           </a>
@@ -102,6 +107,24 @@
   </div>
 
   <div class="navbar-menu is-active" id="navMenu" *ngIf="mobile">
+    @if(LoginService.usuario.role != 'Promotora'){
+    <a class="navbar-item" routerLink="planificacion">
+      Planificación
+    </a>
+    }
+    @if(LoginService.usuario.role != 'coordinadora' && LoginService.usuario.role != 'Promotora'){
+    <a class="navbar-item" routerLink="administracion">
+      Administración
+    </a>
+    <a class="navbar-item" routerLink="estadisticas">
+      Estadísticas
+    </a>
+    }
+    @if(LoginService.usuario.role === 'coordinadora' || LoginService.usuario.role === 'Ejecutiva'){
+    <a class="navbar-item" routerLink="planificacion">
+      Planificación
+    </a>
+    }
     <a class="navbar-item" routerLink="reportes">
       Reportar
     </a>

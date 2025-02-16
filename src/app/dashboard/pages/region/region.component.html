@@ -1,0 +1,134 @@
+<div class="card"
+    style="background: linear-gradient(to right, #001a72, #003c99, #005ebf, #4a9dc1, #6bcaba); color: rgb(212, 212, 212);">
+    <div class="card-content">
+        <app-title [title]="id" />
+        Región
+    </div>
+</div>
+
+<hr>
+
+@if(!planificacionService.loading()){
+<div class="field is-grouped">
+    <div class="control">
+        <label for="" class="label">Mes</label>
+        <div class="select">
+            <select [(ngModel)]="indexPlanificacion" (change)="cambiarPlanificacion()">
+                @for(planificaciones of planificacionService.planificacion(); track $index){
+                <option [value]="$index">{{planificaciones.mes}}</option>
+                }
+            </select>
+        </div>
+    </div>
+    <div class="control">
+        <label for="" class="label">Inicio</label>
+        <input type="date" class="input"
+            [value]="simplificar(planificacionService.planificacion()[indexPlanificacion].inicio)" disabled>
+    </div>
+    <div class="control">
+        <label for="" class="label">Cierre</label>
+        <input type="date" class="input"
+            [value]="simplificar(planificacionService.planificacion()[indexPlanificacion].cierre)" disabled>
+    </div>
+</div>
+} @else {
+<app-loadings />
+}
+
+<div class="columns">
+    <div class="column">
+        <div class="card">
+            <div class="card-content">
+                <span class="title">Marca mas vendedia</span>
+                <canvas id="marcas"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="column">
+        <div class="card">
+            <div class="card-content">
+                <span class="title">Venta por linea</span>
+                <canvas id="lineas"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="column">
+        <div class="card">
+            <div class="card-content">
+                <span class="title">Eventos-Impulsos</span>
+                <canvas id="tipos"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr>
+<div class="card">
+    <div class="card-content">
+        <canvas id="mystic"></canvas>
+    </div>
+</div>
+<div class="card">
+    <div class="card-content">
+        <canvas id="qerametik"></canvas>
+    </div>
+</div>
+<hr>
+
+<div class="columns">
+    <div class="column">
+        <div class="card">
+            <div class="card-content">
+                <span class="title">Clientes vendidos</span>
+                <table class="table is-fullwidth is-striped">
+                    <thead>
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Mystic</th>
+                            <th>Qerametik</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for(cliente of clientesArray; track $index){
+                        <tr>
+                            <td><a [routerLink]="['/dashboard/cliente',cliente.cliente]">{{cliente.cliente}}</a></td>
+                            <td>{{cliente.cantidad_mystic | number}}</td>
+                            <td>{{cliente.cantidad_Qerametik | number}}</td>
+                            <td>{{cliente.cantidad | number}}</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class=" column">
+        <div class="card">
+            <div class="card-content">
+                <span class="title">Ventas por promotora</span>
+                <table class="table is-fullwidth is-striped">
+                    <thead>
+                        <tr>
+                            <th>Promotora</th>
+                            <th>Ventas</th>
+                            <th>Impulso</th>
+                            <th>Evento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for(promotora of productoArray; track $index){
+                        <tr>
+                            <td> <a [routerLink]="['/dashboard/promotora',promotora.id]">{{promotora.promotora}}</a>
+                            </td>
+                            <td>{{promotora.cantidad | number}}</td>
+                            <td>{{promotora.cantidad_impulso | number}}</td>
+                            <td>{{promotora.cantidad_evento | number}}</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

@@ -80,8 +80,10 @@ export interface arrayProductos {
 
 export interface ReporteAgrupado {
     promotora: string; // Nombre completo de la promotora
+    sueldo: string; // Sueldo de la promotora
     marca: string; // Nombre completo de la promotora
     region: string;
+    porcentajeRebranding: number;
     puntosAcumulados: number; // Total de puntos acumulados
     totalGastado: number; // Total del dinero gastado
     productosVendidos: number;
@@ -116,6 +118,7 @@ export interface ReporteSimplificado {
 
 export interface ProductoSimplificado {
     producto: string; // Nombre del producto
+    puntos: number; // Puntos del producto
     linea: string; // Nombre del producto
     marca: string; // Marca del producto
     cantidad: number; // Cantidad de productos reportados
@@ -165,5 +168,9 @@ export interface planificacion {
     incentivos: incentivos_[],
     incentivos_qerametik: incentivos_[],
     planificacion: any, // Planificación semanal (por promotora y cliente)
+    precios: {
+        Mystic: number,
+        Qerametik: number
+    }
     _id?: string,
 }

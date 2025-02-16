@@ -1,5 +1,6 @@
 @if(loading_perfil){
-<div class="card" style="background-color: #34495E; color: rgb(212, 212, 212);">
+<div class="card"
+    style="background: linear-gradient(to right, #001a72, #003c99, #005ebf, #4a9dc1, #6bcaba); color: rgb(212, 212, 212);">
     <div class="card-content">
         <app-title title="Progreso" />
         {{perfil.nombre}} {{perfil.apellido}}
@@ -19,8 +20,28 @@
 </div>
 <hr>
 
+<div class="columns">
+    <div class="column is-4">
+        <div class="card">
+            <div class="card-content">
+                <span class="title">Marca mas vendedia</span>
+                <canvas id="marcas"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="column is-4">
+        <div class="card">
+            <div class="card-content">
+                <span class="title">Venta por linea</span>
+                <canvas id="lineas"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
 <span class="title">
-    Progreso Mystic ({{totalCantidadMystic}} Productos - {{totalPuntosMystic}} Puntos)
+    Progreso Mystic ({{totalCantidadMystic | number: '2.0-0'}} Productos - {{totalPuntosMystic | number: '2.2-2'}}
+    Puntos)
 </span>
 <hr>
 
@@ -30,7 +51,7 @@
         <th>Fecha</th>
         <th>Puntuacion obtenida</th>
         <th>Productos vendidos</th>
-        <!-- <th>Editar</th> -->
+        <th>Eliminar</th>
     </thead>
     <tbody>
         @for(reporte of ReportesFiltradosMystic; track $index){
@@ -38,12 +59,12 @@
             <td>{{reporte.fecha | date:'dd/MM/YYYY'}}</td>
             <td>{{reporte.puntuacionTotal}}</td>
             <td>{{reporte.totalCantidad}}</td>
-            <!-- <td>
-                <button class="button" style="background-color: transparent; border: none; color: rgb(113, 184, 113);"
+            <td>
+                <button class="button" style="background-color: transparent; border: none; color: rgb(192, 102, 102);"
                     (click)="EditarReporte_Mystic(reporte._id)">
-                    <span class="icon"><i class="fas fa-edit"></i></span>
+                    <span class="icon"><i class="fas fa-trash-alt"></i></span>
                 </button>
-            </td> -->
+            </td>
         </tr>
         }
     </tbody>
@@ -53,7 +74,8 @@
 }
 
 <span class="title">
-    Progreso Qerametik ({{totalCantidadQerametik}} Productos - {{totalPuntosQerametik}} Puntos)
+    Progreso Qerametik ({{totalCantidadQerametik | number: '2.0-0'}} Productos - {{totalPuntosQerametik | number:
+    '2.2-2'}} Puntos)
 </span>
 <hr>
 
@@ -63,7 +85,7 @@
         <th>Fecha</th>
         <th>Puntuacion obtenida</th>
         <th>Productos vendidos</th>
-        <!-- <th>Editar</th> -->
+        <th>Eliminar</th>
     </thead>
     <tbody>
         @for(reporte of ReportesFiltradosQerametik; track $index){
@@ -71,12 +93,12 @@
             <td>{{reporte.fecha | date:'dd/MM/YYYY'}}</td>
             <td>{{reporte.puntuacionTotal}}</td>
             <td>{{reporte.totalCantidad}}</td>
-            <!-- <td>
-                <button class="button" style="background-color: transparent; border: none; color: rgb(113, 184, 113);"
+            <td>
+                <button class="button" style="background-color: transparent; border: none; color: rgb(192, 102, 102);"
                     (click)="EditarReporte_Qera(reporte._id)">
-                    <span class="icon"><i class="fas fa-edit"></i></span>
+                    <span class="icon"><i class="fas fa-trash-alt"></i></span>
                 </button>
-            </td> -->
+            </td>
         </tr>
         }
     </tbody>

@@ -81,7 +81,9 @@ export default class PlanificacionComponent {
       hasta: 0,
       incentivo: 0
     }],  // Array de incentivos por ventas (de, hasta, incentivo)
-    planificacion: [] // Planificación semanal (por promotora y cliente)
+    planificacion: [], // Planificación semanal (por promotora y cliente)
+    precios:
+      { Mystic: 0, Qerametik: 0 }
   };
 
 
